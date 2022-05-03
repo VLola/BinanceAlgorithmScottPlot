@@ -21,6 +21,7 @@ using Binance.Net.Enums;
 using ScottPlot;
 using System.Drawing;
 using Binance.Net.Objects.Models.Spot;
+using ScottPlot.Plottable;
 
 namespace BinanceAlgorithmScottPlot
 {
@@ -33,6 +34,7 @@ namespace BinanceAlgorithmScottPlot
         public List<string> list_sumbols_name = new List<string>();
         public List<ListCandles> list_listcandles = new List<ListCandles>();
         public List<FullListCandles> full_list_candles = new List<FullListCandles>();
+        public FinancePlot candlePlot;
         public MainWindow()
         {
             InitializeComponent();
@@ -40,12 +42,58 @@ namespace BinanceAlgorithmScottPlot
             Chart();
             Clients();
             CheckTimeFiles();
-            LIST_SUMBOLS.ItemsSource = list_sumbols_name;
+            LIST_SYMBOLS.ItemsSource = list_sumbols_name;
             EXIT_GRID.Visibility = Visibility.Hidden;
             LOGIN_GRID.Visibility = Visibility.Visible;
+            
         }
 
+        #region - Load Chart -
+        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            LoadChart();
+        }
+        private void LoadChart()
+        {
+            try 
+            {
+                plt.Plot.Remove(candlePlot);
+                string symbol = LIST_SYMBOLS.Text;
+                string path = System.IO.Path.Combine(Environment.CurrentDirectory, "times");
+                if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+                List<string> files_candles = (from a in Directory.GetFiles(path) select System.IO.Path.GetFileNameWithoutExtension(a)).ToList();
+                List<Candle> list = new List<Candle>();
 
+                foreach (string it in files_candles)
+                {
+                    string json = File.ReadAllText(path + "\\" + it);
+                    List<ListCandles> list_candles = JsonConvert.DeserializeObject<List<ListCandles>>(json);
+                    foreach (var iterator in list_candles)
+                    {
+                        if (symbol == iterator.Symbol)
+                        {
+                            list = iterator.listKlines;
+                        }
+                    }
+                }
+                List<OHLC> list_ohlc = new List<OHLC>();
+                double count = 0;
+                foreach (var it in list)
+                {
+                    list_ohlc.Add(new OHLC(Convert.ToDouble(it.Open), Convert.ToDouble(it.High), Convert.ToDouble(it.Low), Convert.ToDouble(it.Close), count));
+                    count += 1;
+                }
+                
+                candlePlot = plt.Plot.AddCandlesticks(list_ohlc.ToArray());
+                candlePlot.YAxisIndex = 1;
+                plt.Refresh();
+            } 
+            catch(Exception e)
+            {
+                ErrorText.Add($"LoadChart {e.Message}");
+            }
+        }
+        #endregion
 
         #region - Create Collection Candles
         private void CollectionCandlestick()
@@ -59,7 +107,7 @@ namespace BinanceAlgorithmScottPlot
                     {
                         Klines(it, klines_count: count);
                     }
-                    SortListCandlestick(count);
+                    WriteToFile();
                 }
             }
             catch (Exception e)
@@ -73,42 +121,17 @@ namespace BinanceAlgorithmScottPlot
             {
                 string path = System.IO.Path.Combine(Environment.CurrentDirectory, "times");
                 if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-                foreach (FullListCandles it in full_list_candles)
-                {
-                    string name_file = it.number.ToString();
-                    if (!File.Exists(path + "/" + name_file))
-                    {
-                        string json = JsonConvert.SerializeObject(it.list);
-                        File.AppendAllText(path + "/" + name_file, json);
-                    }
-                }
-                list_listcandles.Clear();
+                List<string> files_candles = (from a in Directory.GetFiles(path) select System.IO.Path.GetFileNameWithoutExtension(a)).ToList();
+                int count = files_candles.Count;
+                string json = JsonConvert.SerializeObject(list_listcandles);
+                File.AppendAllText(path + "/" + count.ToString(), json);
             }
             catch (Exception e)
             {
                 ErrorText.Add($"WriteToFile {e.Message}");
             }
         }
-        private void SortListCandlestick(int count)
-        {
-            
-            for(int i = 0; i < count; i++)
-            {
-                List<Candle> list_candle_sorted = new List<Candle>();
-                foreach (var it in list_sumbols_name)
-                {
-                    foreach(var iterator in list_listcandles)
-                    {
-                        if(it == iterator.Symbol)
-                        {
-                            list_candle_sorted.Add(iterator.listKlines[i]);
-                        }
-                    }
-                }
-                full_list_candles.Add(new FullListCandles(i, list_candle_sorted));
-            }
-            WriteToFile();
-        }
+        
         #endregion
 
         #region - List Sumbols -
@@ -119,8 +142,8 @@ namespace BinanceAlgorithmScottPlot
                 list_sumbols_name.Add(it.Symbol);
             }
             list_sumbols_name.Sort();
-            LIST_SUMBOLS.Items.Refresh();
-            LIST_SUMBOLS.SelectedIndex = 0;
+            LIST_SYMBOLS.Items.Refresh();
+            LIST_SYMBOLS.SelectedIndex = 0;
         }
         public List<BinancePrice> ListSymbols()
         {
@@ -196,25 +219,25 @@ namespace BinanceAlgorithmScottPlot
         #region - Chart -
         private void Chart()
         {
-            // add some random candles
-            OHLC[] prices = DataGen.RandomStockPrices(null, 100, TimeSpan.FromMinutes(5));
-            double[] xs = prices.Select(x => x.DateTime.ToOADate()).ToArray();
-            var candlePlot = plt.Plot.AddCandlesticks(prices);
-            candlePlot.YAxisIndex = 1;
+            //// add some random candles
+            //OHLC[] prices = DataGen.RandomStockPrices(null, 100, TimeSpan.FromMinutes(5));
+            //double[] xs = prices.Select(x => x.DateTime.ToOADate()).ToArray();
+            //var candlePlot = plt.Plot.AddCandlesticks(prices);
+            //candlePlot.YAxisIndex = 1;
 
-            plt.Plot.XAxis.DateTimeFormat(true);
+            //plt.Plot.XAxis.DateTimeFormat(true);
 
-            // add SMA indicators for 8 and 20 days
-            var sma8 = candlePlot.GetSMA(8);
-            var sma20 = candlePlot.GetSMA(20);
-            var sma8plot = plt.Plot.AddScatterLines(sma8.xs, sma8.ys, Color.Cyan, 2, label: "8 day SMA");
-            var sma20plot = plt.Plot.AddScatterLines(sma20.xs, sma20.ys, Color.Yellow, 2, label: "20 day SMA");
-            sma8plot.YAxisIndex = 1;
-            sma20plot.YAxisIndex = 1;
+            //// add SMA indicators for 8 and 20 days
+            //var sma8 = candlePlot.GetSMA(8);
+            //var sma20 = candlePlot.GetSMA(20);
+            //var sma8plot = plt.Plot.AddScatterLines(sma8.xs, sma8.ys, Color.Cyan, 2, label: "8 day SMA");
+            //var sma20plot = plt.Plot.AddScatterLines(sma20.xs, sma20.ys, Color.Yellow, 2, label: "20 day SMA");
+            //sma8plot.YAxisIndex = 1;
+            //sma20plot.YAxisIndex = 1;
 
-            // customize candle styling
-            candlePlot.ColorDown = ColorTranslator.FromHtml("#00FF00");
-            candlePlot.ColorUp = ColorTranslator.FromHtml("#FF0000");
+            //// customize candle styling
+            //candlePlot.ColorDown = ColorTranslator.FromHtml("#00FF00");
+            //candlePlot.ColorUp = ColorTranslator.FromHtml("#FF0000");
 
             // customize figure styling
             plt.Plot.Layout(padding: 12);
@@ -384,5 +407,7 @@ namespace BinanceAlgorithmScottPlot
         }
         // ------------------------------------------------------- End Error Text Block ----------------------------------------
         #endregion
+
+        
     }
 }
