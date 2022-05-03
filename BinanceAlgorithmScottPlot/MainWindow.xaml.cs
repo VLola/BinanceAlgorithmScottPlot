@@ -20,6 +20,7 @@ using BinanceAlgorithmScottPlot.TimeFiles;
 using Binance.Net.Enums;
 using ScottPlot;
 using System.Drawing;
+using Binance.Net.Objects.Models.Spot;
 
 namespace BinanceAlgorithmScottPlot
 {
@@ -29,8 +30,9 @@ namespace BinanceAlgorithmScottPlot
     public partial class MainWindow : Window
     {
         public Socket socket;
-        public List<ListCandles> LIST_CANDLES = new List<ListCandles>();
-        public List<Candle> list = new List<Candle>();
+        public List<string> list_sumbols_name = new List<string>();
+        public List<ListCandles> list_listcandles = new List<ListCandles>();
+        public List<FullListCandles> full_list_candles = new List<FullListCandles>();
         public MainWindow()
         {
             InitializeComponent();
@@ -38,12 +40,104 @@ namespace BinanceAlgorithmScottPlot
             Chart();
             Clients();
             CheckTimeFiles();
+            LIST_SUMBOLS.ItemsSource = list_sumbols_name;
+            EXIT_GRID.Visibility = Visibility.Hidden;
+            LOGIN_GRID.Visibility = Visibility.Visible;
         }
 
-        private void Start()
+
+
+        #region - Create Collection Candles
+        private void CollectionCandlestick()
         {
-            Klines("BTCUSDT", klines_count: 1);
+            try
+            {
+                int count = Convert.ToInt32(COUNT_CANDLES.Text);
+                if (count > 0 && count < 500)
+                {
+                    foreach(var it in list_sumbols_name)
+                    {
+                        Klines(it, klines_count: count);
+                    }
+                    SortListCandlestick(count);
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorText.Add($"CollectionCandlestick {e.Message}");
+            }
         }
+        public void WriteToFile()
+        {
+            try
+            {
+                string path = System.IO.Path.Combine(Environment.CurrentDirectory, "times");
+                if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+                foreach (FullListCandles it in full_list_candles)
+                {
+                    string name_file = it.number.ToString();
+                    if (!File.Exists(path + "/" + name_file))
+                    {
+                        string json = JsonConvert.SerializeObject(it.list);
+                        File.AppendAllText(path + "/" + name_file, json);
+                    }
+                }
+                list_listcandles.Clear();
+            }
+            catch (Exception e)
+            {
+                ErrorText.Add($"WriteToFile {e.Message}");
+            }
+        }
+        private void SortListCandlestick(int count)
+        {
+            
+            for(int i = 0; i < count; i++)
+            {
+                List<Candle> list_candle_sorted = new List<Candle>();
+                foreach (var it in list_sumbols_name)
+                {
+                    foreach(var iterator in list_listcandles)
+                    {
+                        if(it == iterator.Symbol)
+                        {
+                            list_candle_sorted.Add(iterator.listKlines[i]);
+                        }
+                    }
+                }
+                full_list_candles.Add(new FullListCandles(i, list_candle_sorted));
+            }
+            WriteToFile();
+        }
+        #endregion
+
+        #region - List Sumbols -
+        private void GetSumbolName()
+        {
+            foreach (var it in ListSymbols())
+            {
+                list_sumbols_name.Add(it.Symbol);
+            }
+            list_sumbols_name.Sort();
+            LIST_SUMBOLS.Items.Refresh();
+            LIST_SUMBOLS.SelectedIndex = 0;
+        }
+        public List<BinancePrice> ListSymbols()
+        {
+            try
+            {
+                var result = socket.futures.ExchangeData.GetPricesAsync().Result;
+                if (!result.Success) ErrorText.Add("Error GetKlinesAsync");
+                return result.Data.ToList();
+            }
+            catch (Exception e)
+            {
+                ErrorText.Add($"ListSymbols {e.Message}");
+                return ListSymbols();
+            }
+        }
+
+        #endregion
 
         #region - Canged Time Files -
         private void CheckTimeFiles()
@@ -59,21 +153,26 @@ namespace BinanceAlgorithmScottPlot
             }
             catch (Exception e)
             {
-                ErrorText.Add($"ErrorWatcher {e.Message}");
+                ErrorText.Add($"CheckTimeFiles {e.Message}");
             }
 
         }
         private void OnChangedFiles(object source, FileSystemEventArgs e)
         {
+            // загрузка графика
             ErrorText.Add("Super");
         }
         #endregion
 
         #region - Server Time -
-        private void Button_StartConnect(object sender, RoutedEventArgs e) {
+        private void Button_StartConnect(object sender, RoutedEventArgs e)
+        {
             GetServerTime();
-            Start();
-            WriteToFile();
+            GetSumbolName();
+        }
+        private void Button_StartConnect1(object sender, RoutedEventArgs e)
+        {
+            CollectionCandlestick();
         }
         private void GetServerTime()
         {
@@ -83,7 +182,7 @@ namespace BinanceAlgorithmScottPlot
                 if (!result.Success) ErrorText.Add("Error GetServerTimeAsync");
                 else
                 {
-                    server_time.Text = result.Data.ToShortTimeString();
+                    SERVER_TIME.Text = result.Data.ToShortTimeString();
                 }
             }
 
@@ -144,19 +243,20 @@ namespace BinanceAlgorithmScottPlot
         #endregion
 
         #region - Candles -
-        public void Klines(string SYMBOL, DateTime? start_time = null, DateTime? end_time = null, int? klines_count = null)
+        public void Klines(string Symbol, DateTime? start_time = null, DateTime? end_time = null, int? klines_count = null)
         {
             try
             {
-
-                var result = socket.futures.ExchangeData.GetKlinesAsync(symbol: SYMBOL, interval: KlineInterval.OneMinute, startTime: start_time, endTime: end_time, limit: klines_count).Result;
+                var result = socket.futures.ExchangeData.GetKlinesAsync(symbol: Symbol, interval: KlineInterval.OneMinute, startTime: start_time, endTime: end_time, limit: klines_count).Result;
                 if (!result.Success) ErrorText.Add("Error GetKlinesAsync");
                 else
                 {
+                    List<Candle> list = new List<Candle>();
                     foreach (var it in result.Data.ToList())
                     {
-                        list.Insert(0, new Candle(SYMBOL, it.OpenTime, it.OpenPrice, it.HighPrice, it.LowPrice, it.ClosePrice, it.CloseTime));                                 // список монет с ценами
+                        list.Add(new Candle(Symbol, it.OpenTime, it.OpenPrice, it.HighPrice, it.LowPrice, it.ClosePrice, it.CloseTime));                                 // список монет с ценами
                     }
+                    list_listcandles.Add(new ListCandles(Symbol, list));
                 }
             }
             catch (Exception e)
@@ -164,28 +264,7 @@ namespace BinanceAlgorithmScottPlot
                 ErrorText.Add($"Klines {e.Message}");
             }
         }
-        public void WriteToFile()
-        {
-            try
-            {
-                foreach(Candle it in list)
-                {
-                    string time_start = "1.txt";
-                    string path = System.IO.Path.Combine(Environment.CurrentDirectory, "times");
-                    if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-                    if (!File.Exists(path + "/" + time_start)) {
-                        string path_full = time_start;
-                        string json = JsonConvert.SerializeObject(it);
-                        File.AppendAllText(path + "/" + path_full, json);
-                    }
-                }
-                list.Clear();
-            }
-            catch (Exception e)
-            {
-                ErrorText.Add($"WriteToFile {e.Message}");
-            }
-        }
+        
         #endregion
 
         #region - Login -
@@ -193,18 +272,18 @@ namespace BinanceAlgorithmScottPlot
         {
             try
             {
-                string name = client_name.Text;
-                string api = api_key.Text;
-                string key = secret_key.Text;
+                string name = CLIENT_NAME.Text;
+                string api = API_KEY.Text;
+                string key = SECRET_KEY.Text;
                 if (name != "" && api != "" && key != "")
                 {
                     string path = System.IO.Path.Combine(Environment.CurrentDirectory, "clients");
                     if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-                    if (!File.Exists(path + "/" + client_name.Text))
+                    if (!File.Exists(path + "/" + CLIENT_NAME.Text))
                     {
-                        client_name.Text = "";
-                        api_key.Text = "";
-                        secret_key.Text = "";
+                        CLIENT_NAME.Text = "";
+                        API_KEY.Text = "";
+                        SECRET_KEY.Text = "";
                         Client client = new Client(name, api, key);
                         string json = JsonConvert.SerializeObject(client);
                         File.WriteAllText(path + "/" + name, json);
@@ -227,8 +306,8 @@ namespace BinanceAlgorithmScottPlot
                 if (filesDir.Count > 0)
                 {
                     ClientList file_list = new ClientList(filesDir);
-                    box_name.ItemsSource = file_list.BoxNameContent;
-                    box_name.SelectedItem = file_list.BoxNameContent[0];
+                    BOX_NAME.ItemsSource = file_list.BoxNameContent;
+                    BOX_NAME.SelectedItem = file_list.BoxNameContent[0];
                 }
             }
             catch (Exception e)
@@ -240,20 +319,20 @@ namespace BinanceAlgorithmScottPlot
         {
             try
             {
-                string api = api_key.Text;
-                string key = secret_key.Text;
+                string api = API_KEY.Text;
+                string key = SECRET_KEY.Text;
                 if (api != "" && key != "")
                 {
-                    client_name.Text = "";
-                    api_key.Text = "";
-                    secret_key.Text = "";
+                    CLIENT_NAME.Text = "";
+                    API_KEY.Text = "";
+                    SECRET_KEY.Text = "";
                     socket = new Socket(api, key);
                     Login_Click();
                 }
-                else if (box_name.Text != "")
+                else if (BOX_NAME.Text != "")
                 {
                     string path = System.IO.Path.Combine(Environment.CurrentDirectory, "clients");
-                    string json = File.ReadAllText(path + "\\" + box_name.Text);
+                    string json = File.ReadAllText(path + "\\" + BOX_NAME.Text);
                     Client client = JsonConvert.DeserializeObject<Client>(json);
                     socket = new Socket(client.ApiKey, client.SecretKey);
                     Login_Click();
@@ -266,13 +345,13 @@ namespace BinanceAlgorithmScottPlot
         }
         private void Login_Click()
         {
-            login_grid.Visibility = Visibility.Hidden;
-            exit_grid.Visibility = Visibility.Visible;
+            LOGIN_GRID.Visibility = Visibility.Hidden;
+            EXIT_GRID.Visibility = Visibility.Visible;
         }
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
-            exit_grid.Visibility = Visibility.Hidden;
-            login_grid.Visibility = Visibility.Visible;
+            EXIT_GRID.Visibility = Visibility.Hidden;
+            LOGIN_GRID.Visibility = Visibility.Visible;
             socket = null;
         }
         #endregion
@@ -297,7 +376,7 @@ namespace BinanceAlgorithmScottPlot
         }
         private void OnChanged(object source, FileSystemEventArgs e)
         {
-            Dispatcher.Invoke(new Action(() => { error_log.Text = File.ReadAllText(ErrorText.FullPatch()); }));
+            Dispatcher.Invoke(new Action(() => { ERROR_LOG.Text = File.ReadAllText(ErrorText.FullPatch()); }));
         }
         private void Button_ClearErrors(object sender, RoutedEventArgs e)
         {

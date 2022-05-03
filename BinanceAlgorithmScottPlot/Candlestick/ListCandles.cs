@@ -8,11 +8,11 @@ namespace BinanceAlgorithmScottPlot.Candlestick
 {
     public class ListCandles
     {
-        public string symbol { get; set; }
+        public string Symbol { get; set; }
         public List<Candle> listKlines { get; set; }
-        public ListCandles(string symbol, List<Candle> listKlines)
+        public ListCandles(string Symbol, List<Candle> listKlines)
         {
-            this.symbol = symbol;
+            this.Symbol = Symbol;
             this.listKlines = listKlines;
         }
     }

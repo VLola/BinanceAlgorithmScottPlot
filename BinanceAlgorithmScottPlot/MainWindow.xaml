@@ -85,7 +85,7 @@
             
             <!--Enter Login-->
             
-            <Grid Visibility="Visible" x:Name="login_grid" Grid.Row="0" Style="{DynamicResource styleGrid}">
+            <Grid Visibility="Hidden" x:Name="LOGIN_GRID" Grid.Row="0" Style="{DynamicResource styleGrid}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
@@ -98,19 +98,19 @@
                     <RowDefinition Height="30*"></RowDefinition>
                 </Grid.RowDefinitions>
                 <Label Grid.Column="0" Grid.Row="0" Content="ApiKey:" Style="{DynamicResource styleLabel}"/>
-                <TextBox Grid.Column="1" Grid.Row="0" x:Name="api_key" Style="{DynamicResource styleTextBox}"/>
+                <TextBox Grid.Column="1" Grid.Row="0" x:Name="API_KEY" Style="{DynamicResource styleTextBox}"/>
                 <Label Grid.Column="2" Grid.Row="0" Content="SecretKey:" Style="{DynamicResource styleLabel}"/>
-                <TextBox Grid.Column="3" Grid.Row="0" x:Name="secret_key" Style="{DynamicResource styleTextBox}"/>
+                <TextBox Grid.Column="3" Grid.Row="0" x:Name="SECRET_KEY" Style="{DynamicResource styleTextBox}"/>
                 <Label Grid.Column="0" Grid.Row="1" Content="Name:" Style="{DynamicResource styleLabel}"/>
-                <TextBox Grid.Column="1" Grid.Row="1" x:Name="client_name" Style="{DynamicResource styleTextBox}"/>
-                <ComboBox Grid.Column="2" Grid.Row="1" Grid.ColumnSpan="2" x:Name="box_name" Style="{DynamicResource styleComboBox}"/>
+                <TextBox Grid.Column="1" Grid.Row="1" x:Name="CLIENT_NAME" Style="{DynamicResource styleTextBox}"/>
+                <ComboBox Grid.Column="2" Grid.Row="1" Grid.ColumnSpan="2" x:Name="BOX_NAME" Style="{DynamicResource styleComboBox}"/>
                 <Button Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Content="Save" Click="Button_Save" Style="{DynamicResource styleButton}"/>
                 <Button Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="2" Content="Login" Click="Button_Login" Style="{DynamicResource styleButton}"/>
             </Grid>
             
             <!--Exit Account-->
 
-            <Grid Visibility="Hidden" x:Name="exit_grid" Grid.Column="0" Grid.Row="0" Style="{DynamicResource styleGrid}">
+            <Grid Visibility="Visible" x:Name="EXIT_GRID" Grid.Column="0" Grid.Row="0" Style="{DynamicResource styleGrid}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
@@ -120,25 +120,27 @@
                     <RowDefinition/>
                     <RowDefinition/>
                 </Grid.RowDefinitions>
-                <Button x:Name="exit" Content="Exit" Grid.Column="0" Grid.Row="0" Click="Exit_Click" Style="{DynamicResource styleButton}"/>
+                <Button Content="Exit" Grid.Column="0" Grid.Row="0" Click="Exit_Click" Style="{DynamicResource styleButton}"/>
                 <Grid  Grid.Column="1" Grid.Row="0" HorizontalAlignment="Center">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <Label Grid.Column="0" Content="Count candles:" Style="{DynamicResource styleLabel}"/>
-                    <TextBox x:Name="count_candles" Text="10" Grid.Column="1" Style="{DynamicResource styleTextBox}"/>
+                    <TextBox x:Name="COUNT_CANDLES" Text="10" Grid.Column="1" Style="{DynamicResource styleTextBox}"/>
                 </Grid>
-                <Button x:Name="start_connect" Content="Start connect" Grid.Column="0" Grid.Row="1" Click="Button_StartConnect" Style="{DynamicResource styleButton}"/>
-                <Button x:Name="refresh_candles" Content="Refresh candles" Grid.Column="1" Grid.Row="1" Style="{DynamicResource styleButton}"/>
+                <Button Content="Start connect" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Left" Click="Button_StartConnect" Style="{DynamicResource styleButton}"/>
+                <Button Content="Start connect1" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Right" Click="Button_StartConnect1" Style="{DynamicResource styleButton}"/>
+                <Button Content="Refresh candles" Grid.Column="1" Grid.Row="1" Style="{DynamicResource styleButton}"/>
                 <Grid  Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <Label Grid.Column="0" Content="Server time:" Style="{DynamicResource styleLabel}"/>
-                    <TextBlock x:Name="server_time" Grid.Column="1" Text="null"  Style="{DynamicResource styleTextBlock}"/>
+                    <TextBlock x:Name="SERVER_TIME" Grid.Column="1" Text="null"  Style="{DynamicResource styleTextBlock}"/>
                 </Grid>
+                <ComboBox x:Name="LIST_SUMBOLS" Grid.Column="1" Grid.Row="2" Style="{DynamicResource styleComboBox}"/>
             </Grid>
             
             <!--Algorithm-->
@@ -204,7 +206,7 @@
                 <Button Content="Clear errors" Click="Button_ClearErrors" Style="{DynamicResource styleButtonLeftBottom}"/>
             </Grid>
             <Grid Grid.Row="2" Style="{DynamicResource styleGrid}">
-                <TextBox x:Name="error_log" Grid.Row="2" Style="{DynamicResource styleTextBoxErrors}"/>
+                <TextBox x:Name="ERROR_LOG" Grid.Row="2" Style="{DynamicResource styleTextBoxErrors}"/>
             </Grid>
         </Grid>
         <Grid Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3" Style="{DynamicResource styleGrid}">

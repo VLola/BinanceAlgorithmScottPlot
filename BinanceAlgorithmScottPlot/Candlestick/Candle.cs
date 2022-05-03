@@ -8,16 +8,16 @@ namespace BinanceAlgorithmScottPlot.Candlestick
 {
     public class Candle
     {
-        public string Sumbol { get; set; }
+        public string Symbol { get; set; }
         public DateTime OpenTime { get; set; }
         public decimal Open { get; set; }
         public decimal High { get; set; }
         public decimal Low { get; set; }
         public decimal Close { get; set; }
         public DateTime CloseTime { get; set; }
-        public Candle(string Sumbol, DateTime OpenTime, decimal Open, decimal High, decimal Low, decimal Close, DateTime CloseTime)
+        public Candle(string Symbol, DateTime OpenTime, decimal Open, decimal High, decimal Low, decimal Close, DateTime CloseTime)
         {
-            this.Sumbol = Sumbol;
+            this.Symbol = Symbol;
             this.OpenTime = OpenTime;
             this.Open = Open;
             this.High = High;
