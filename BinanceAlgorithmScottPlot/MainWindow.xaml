@@ -75,16 +75,16 @@
         </Grid.RowDefinitions>
         
         <!-- Menu -->
-        
+
         <Grid Grid.Column="0" Grid.Row="0">
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            
+
             <!--Enter Login-->
-            
+
             <Grid Visibility="Hidden" x:Name="LOGIN_GRID" Grid.Row="0" Style="{DynamicResource styleGrid}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
@@ -107,7 +107,7 @@
                 <Button Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Content="Save" Click="Button_Save" Style="{DynamicResource styleButton}"/>
                 <Button Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="2" Content="Login" Click="Button_Login" Style="{DynamicResource styleButton}"/>
             </Grid>
-            
+
             <!--Exit Account-->
 
             <Grid Visibility="Visible" x:Name="EXIT_GRID" Grid.Column="0" Grid.Row="0" Style="{DynamicResource styleGrid}">
@@ -127,11 +127,32 @@
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <Label Grid.Column="0" Content="Count candles:" Style="{DynamicResource styleLabel}"/>
-                    <TextBox x:Name="COUNT_CANDLES" Text="10" Grid.Column="1" Style="{DynamicResource styleTextBox}"/>
+                    <TextBox x:Name="COUNT_CANDLES" Text="100" Grid.Column="1" Style="{DynamicResource styleTextBox}"/>
                 </Grid>
                 <Button Content="Start connect" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Left" Click="Button_StartConnect" Style="{DynamicResource styleButton}"/>
-                <Button Content="Start connect1" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Right" Click="Button_StartConnect1" Style="{DynamicResource styleButton}"/>
-                <Button Content="Refresh candles" Grid.Column="1" Grid.Row="1" Style="{DynamicResource styleButton}"/>
+                <Button Content="Refile" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Right" Click="Button_StartConnect1" Style="{DynamicResource styleButton}"/>
+                <Grid Grid.Column="1" Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0" Content="SMA:" Style="{DynamicResource styleLabel}"/>
+                        <TextBox x:Name="SMA_LONG" Text="20" Grid.Column="1" Style="{DynamicResource styleTextBox}"/>
+                    </Grid>
+                    <Grid Grid.Column="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0" Content="SMA:" Style="{DynamicResource styleLabel}"/>
+                        <TextBox x:Name="SMA_SHORT" Text="2" Grid.Column="1" Style="{DynamicResource styleTextBox}"/>
+                    </Grid>
+                </Grid>
                 <Grid  Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
@@ -142,9 +163,9 @@
                 </Grid>
                 <ComboBox x:Name="LIST_SYMBOLS" SelectionChanged="ComboBox_SelectionChanged" Grid.Column="1" Grid.Row="2" Style="{DynamicResource styleComboBox}"/>
             </Grid>
-            
+
             <!--Algorithm-->
-            
+
             <Grid Grid.Row="1" Style="{DynamicResource styleGrid}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
@@ -188,12 +209,9 @@
                     <TextBox Grid.Column="1" Style="{DynamicResource styleTextBox}"/>
                 </Grid>
             </Grid>
-            
-            <Grid Background="Black" Grid.Row="2"/><!--Удалить-->
+
         </Grid>
-        <Grid Background="Black" Grid.Column="1" Grid.Row="0"/>
-        <!--Удалить-->
-        
+
         <!--Error Block-->
         
         <Grid Grid.Column="2" Grid.Row="0">

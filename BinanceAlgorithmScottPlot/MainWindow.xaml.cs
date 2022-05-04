@@ -35,6 +35,8 @@ namespace BinanceAlgorithmScottPlot
         public List<ListCandles> list_listcandles = new List<ListCandles>();
         public List<FullListCandles> full_list_candles = new List<FullListCandles>();
         public FinancePlot candlePlot;
+        public ScatterPlot sma_long_plot;
+        public ScatterPlot sma_short_plot;
         public MainWindow()
         {
             InitializeComponent();
@@ -45,7 +47,42 @@ namespace BinanceAlgorithmScottPlot
             LIST_SYMBOLS.ItemsSource = list_sumbols_name;
             EXIT_GRID.Visibility = Visibility.Hidden;
             LOGIN_GRID.Visibility = Visibility.Visible;
-            
+            SMA_LONG.TextChanged += SMA_LONG_TextChanged;
+            SMA_SHORT.TextChanged += SMA_SHORT_TextChanged;
+        }
+
+        private void SMA_SHORT_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (SMA_SHORT.Text != "")
+            {
+                string text_short = SMA_SHORT.Text;
+                int sma_indi_short = Convert.ToInt32(text_short);
+                if (sma_indi_short > 1)
+                {
+                    plt.Plot.Remove(sma_short_plot);
+                    var sma_short = candlePlot.GetSMA(sma_indi_short);
+                    sma_short_plot = plt.Plot.AddScatterLines(sma_short.xs, sma_short.ys, Color.AntiqueWhite, 2, label: text_short + " minute SMA");
+                    sma_short_plot.YAxisIndex = 1;
+                    plt.Refresh();
+                }
+            }
+        }
+
+        private void SMA_LONG_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if(SMA_LONG.Text != "")
+            {
+                string text_long = SMA_LONG.Text;
+                int sma_indi_long = Convert.ToInt32(text_long);
+                if (sma_indi_long > 1)
+                {
+                    plt.Plot.Remove(sma_long_plot);
+                    var sma_long = candlePlot.GetSMA(sma_indi_long);
+                    sma_long_plot = plt.Plot.AddScatterLines(sma_long.xs, sma_long.ys, Color.Cyan, 2, label: text_long + " minute SMA");
+                    sma_long_plot.YAxisIndex = 1;
+                    plt.Refresh();
+                }
+            }
         }
 
         #region - Load Chart -
@@ -55,9 +92,11 @@ namespace BinanceAlgorithmScottPlot
         }
         private void LoadChart()
         {
-            try 
+            try
             {
                 plt.Plot.Remove(candlePlot);
+                plt.Plot.Remove(sma_long_plot);
+                plt.Plot.Remove(sma_short_plot);
                 string symbol = LIST_SYMBOLS.Text;
                 string path = System.IO.Path.Combine(Environment.CurrentDirectory, "times");
                 if (!Directory.Exists(path)) Directory.CreateDirectory(path);
@@ -86,6 +125,27 @@ namespace BinanceAlgorithmScottPlot
                 
                 candlePlot = plt.Plot.AddCandlesticks(list_ohlc.ToArray());
                 candlePlot.YAxisIndex = 1;
+
+                if (SMA_LONG.Text != "" && SMA_SHORT.Text != "")
+                {
+                    string text_long = SMA_LONG.Text;
+                    string text_short = SMA_SHORT.Text;
+                    int sma_indi_long = Convert.ToInt32(text_long);
+                    int sma_indi_short = Convert.ToInt32(text_short);
+                    if (sma_indi_long > 1 && sma_indi_short > 1)
+                    {
+                        plt.Plot.Remove(sma_long_plot);
+                        plt.Plot.Remove(sma_short_plot);
+                        var sma_long = candlePlot.GetSMA(sma_indi_long); 
+                        var sma_short = candlePlot.GetSMA(sma_indi_short);
+                        sma_long_plot = plt.Plot.AddScatterLines(sma_long.xs, sma_long.ys, Color.Cyan, 2, label: text_long + " minute SMA");
+                        sma_short_plot = plt.Plot.AddScatterLines(sma_short.xs, sma_short.ys, Color.AntiqueWhite, 2, label: text_short + " minute SMA");
+                        sma_long_plot.YAxisIndex = 1;
+                        sma_short_plot.YAxisIndex = 1;
+                    }
+
+                }
+
                 plt.Refresh();
             } 
             catch(Exception e)
