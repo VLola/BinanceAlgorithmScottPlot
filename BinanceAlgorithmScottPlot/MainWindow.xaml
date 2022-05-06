@@ -43,10 +43,10 @@
             <Setter Property="Background" Value="Black" />
         </Style>
         <Style x:Key="styleButtonLeftBottom" TargetType="Button">
-            <Setter Property="VerticalAlignment" Value="Bottom" />
-            <Setter Property="HorizontalAlignment" Value="Left" />
-            <Setter Property="Padding" Value="20 0" />
-            <Setter Property="Background" Value="Gray" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="Margin" Value="2" />
+            <Setter Property="Background" Value="DimGray" />
             <Setter Property="Foreground" Value="White" />
         </Style>
         <Style x:Key="styleButton" TargetType="Button">
@@ -70,15 +70,14 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition/>
+            <RowDefinition Height="25*"/>
+            <RowDefinition Height="50*"/>
         </Grid.RowDefinitions>
         
         <!-- Menu -->
 
         <Grid Grid.Column="0" Grid.Row="0">
             <Grid.RowDefinitions>
-                <RowDefinition/>
                 <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
@@ -166,7 +165,7 @@
 
             <!--Algorithm-->
 
-            <Grid Grid.Row="1" Style="{DynamicResource styleGrid}">
+            <Grid Grid.Row="1" Visibility="Visible" Style="{DynamicResource styleGrid}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
@@ -174,40 +173,14 @@
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="30*"></RowDefinition>
-                    <RowDefinition Height="30*"></RowDefinition>
-                    <RowDefinition Height="30*"></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
                 </Grid.RowDefinitions>
-                <Label Grid.Column="0" Grid.Row="0" Content="Price change:" Style="{DynamicResource styleLabel}"/>
-                <TextBox Grid.Column="1" Grid.Row="0"  Style="{DynamicResource styleTextBox}"/>
-                <Button Grid.Column="2" Grid.Row="0" Grid.ColumnSpan="2" Content="Save" Style="{DynamicResource styleButton}"/>
-                <ComboBox Grid.Column="0" Grid.Row="1" Style="{DynamicResource styleComboBox}"/>
-                <ComboBox Grid.Column="1" Grid.Row="1" Style="{DynamicResource styleComboBox}"/>
-                <Button Grid.Column="2" Grid.Row="1" Grid.ColumnSpan="2" Content="Start" Style="{DynamicResource styleButton}"/>
-                <Grid Grid.Column="0" Grid.Row="2">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <Label Grid.Column="0" Content="Start:" Style="{DynamicResource styleLabel}"/>
-                    <TextBox Grid.Column="1" Style="{DynamicResource styleTextBox}"/>
-                </Grid>
-                <Grid Grid.Column="1" Grid.Row="2">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <Label Grid.Column="0" Content="TP:" Style="{DynamicResource styleLabel}"/>
-                    <TextBox Grid.Column="1" Style="{DynamicResource styleTextBox}"/>
-                </Grid>
-                <Grid Grid.Column="2" Grid.Row="2">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <Label Grid.Column="0" Content="SL:" Style="{DynamicResource styleLabel}"/>
-                    <TextBox Grid.Column="1" Style="{DynamicResource styleTextBox}"/>
-                </Grid>
+
+                <Button x:Name="START_ASYNC" Grid.Column="0" Grid.Row="0" Content="Start Async" Style="{DynamicResource styleButton}"/>
+                <Button x:Name="STOP_ASYNC" Grid.Column="1" Grid.Row="0" Content="Stopt Async" Style="{DynamicResource styleButton}"/>
+
             </Grid>
 
         </Grid>
@@ -218,14 +191,14 @@
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition/>
-                <RowDefinition/>
             </Grid.RowDefinitions>
-            <Grid Background="Black" Grid.Column="0" Grid.Row="0"/><!--Удалить-->
-            <Grid Grid.Row="1" Style="{DynamicResource styleGrid}">
-                <Button Content="Clear errors" Click="Button_ClearErrors" Style="{DynamicResource styleButtonLeftBottom}"/>
-            </Grid>
-            <Grid Grid.Row="2" Style="{DynamicResource styleGrid}">
-                <TextBox x:Name="ERROR_LOG" Grid.Row="2" Style="{DynamicResource styleTextBoxErrors}"/>
+            <Grid Grid.Row="0" Style="{DynamicResource styleGrid}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="10*"/>
+                    <ColumnDefinition Width="50*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Content="Clear errors" Click="Button_ClearErrors" Style="{DynamicResource styleButtonLeftBottom}"/>
+                <TextBox Grid.Column="1" x:Name="ERROR_LOG" Style="{DynamicResource styleTextBoxErrors}"/>
             </Grid>
         </Grid>
         <Grid Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3" Style="{DynamicResource styleGrid}">

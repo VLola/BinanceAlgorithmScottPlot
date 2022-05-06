@@ -22,6 +22,9 @@ using ScottPlot;
 using System.Drawing;
 using Binance.Net.Objects.Models.Spot;
 using ScottPlot.Plottable;
+using Binance.Net.Objects.Models.Spot.Socket;
+using Binance.Net.Interfaces;
+using Binance.Net.Clients;
 
 namespace BinanceAlgorithmScottPlot
 {
@@ -37,6 +40,7 @@ namespace BinanceAlgorithmScottPlot
         public FinancePlot candlePlot;
         public ScatterPlot sma_long_plot;
         public ScatterPlot sma_short_plot;
+        BinanceSocketClient socketClient3;
         public MainWindow()
         {
             InitializeComponent();
@@ -49,8 +53,74 @@ namespace BinanceAlgorithmScottPlot
             LOGIN_GRID.Visibility = Visibility.Visible;
             SMA_LONG.TextChanged += SMA_LONG_TextChanged;
             SMA_SHORT.TextChanged += SMA_SHORT_TextChanged;
+            START_ASYNC.Click += START_ASYNC_Click;
+            STOP_ASYNC.Click += STOP_ASYNC_Click;
         }
 
+        
+        #region - Async klines -
+
+        //public delegate void KlineUpdate(IBinanceStreamKlineData Message);
+        //public event KlineUpdate OnMessage; 
+        //void Message(IBinanceStreamKlineData Message) 
+        //{
+        //    try
+        //    {
+        //        ErrorText.Add("Super");
+        //        Candle candle = new Candle(Message.Symbol, Message.Data.OpenTime, Message.Data.OpenPrice, Message.Data.HighPrice, Message.Data.LowPrice, Message.Data.ClosePrice, Message.Data.CloseTime);
+        //        string path = System.IO.Path.Combine(Environment.CurrentDirectory, "candles");
+        //        if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+        //        List<string> files_candles = (from a in Directory.GetFiles(path) select System.IO.Path.GetFileNameWithoutExtension(a)).ToList();
+        //        int count = files_candles.Count;
+        //        string json = JsonConvert.SerializeObject(candle);
+        //        File.AppendAllText(path + "/" + count.ToString(), json);
+        //    }
+        //    catch (Exception c)
+        //    {
+        //        ErrorText.Add($"Message {c.Message}");
+        //    }
+        //}
+        private void STOP_ASYNC_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                socket.socketClient.UnsubscribeAllAsync();
+            }
+            catch (Exception c)
+            {
+                ErrorText.Add($"STOP_ASYNC_Click {c.Message}");
+            }
+        }
+
+        private void START_ASYNC_Click(object sender, RoutedEventArgs e)
+        {
+            monitorCandles();
+        }
+        public List<OHLC> list_ohlc_new = new List<OHLC>();
+        public async void monitorCandles()
+        {
+            await socket.socketClient.UsdFuturesStreams.SubscribeToKlineUpdatesAsync("BTCUSDT", KlineInterval.OneMinute, Message => {
+
+                bool check = false;
+                foreach (var it in list_ohlc_new) 
+                {
+                    if (Message.Data.Data.OpenTime == it.DateTime)
+                    {
+                        it.Open = Decimal.ToDouble(Message.Data.Data.OpenPrice);
+                        it.High = Decimal.ToDouble(Message.Data.Data.HighPrice);
+                        it.Low = Decimal.ToDouble(Message.Data.Data.LowPrice);
+                        it.Close = Decimal.ToDouble(Message.Data.Data.ClosePrice);
+                        check = true;
+                    }
+                }
+                if(!check) list_ohlc_new.Add(new OHLC(Decimal.ToDouble(Message.Data.Data.OpenPrice), Decimal.ToDouble(Message.Data.Data.HighPrice), Decimal.ToDouble(Message.Data.Data.LowPrice), Decimal.ToDouble(Message.Data.Data.ClosePrice), Message.Data.Data.OpenTime, new TimeSpan(TimeSpan.TicksPerMinute)));
+                Dispatcher.Invoke(new Action(() => { LoadChart(); }));
+
+            });
+        }
+        #endregion
+
+        #region - Event SMA -
         private void SMA_SHORT_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (SMA_SHORT.Text != "")
@@ -84,11 +154,33 @@ namespace BinanceAlgorithmScottPlot
                 }
             }
         }
+        #endregion
 
         #region - Load Chart -
+        public List<Candle> list_candle_ohlc = new List<Candle>();
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            list_candle_ohlc.Clear();
+            string symbol = LIST_SYMBOLS.Text;
+            string path = System.IO.Path.Combine(Environment.CurrentDirectory, "times");
+            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+            List<string> files_candles = (from a in Directory.GetFiles(path) select System.IO.Path.GetFileNameWithoutExtension(a)).ToList();
+            
+            foreach (string it in files_candles)
+            {
+                string json = File.ReadAllText(path + "\\" + it);
+                List<ListCandles> list_candles = JsonConvert.DeserializeObject<List<ListCandles>>(json);
+                foreach (var iterator in list_candles)
+                {
+                    if (symbol == iterator.Symbol)
+                    {
+                        list_candle_ohlc = iterator.listKlines;
+                    }
+                }
+            }
+            
             LoadChart();
+
         }
         private void LoadChart()
         {
@@ -97,32 +189,21 @@ namespace BinanceAlgorithmScottPlot
                 plt.Plot.Remove(candlePlot);
                 plt.Plot.Remove(sma_long_plot);
                 plt.Plot.Remove(sma_short_plot);
-                string symbol = LIST_SYMBOLS.Text;
-                string path = System.IO.Path.Combine(Environment.CurrentDirectory, "times");
-                if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-                List<string> files_candles = (from a in Directory.GetFiles(path) select System.IO.Path.GetFileNameWithoutExtension(a)).ToList();
-                List<Candle> list = new List<Candle>();
 
-                foreach (string it in files_candles)
-                {
-                    string json = File.ReadAllText(path + "\\" + it);
-                    List<ListCandles> list_candles = JsonConvert.DeserializeObject<List<ListCandles>>(json);
-                    foreach (var iterator in list_candles)
-                    {
-                        if (symbol == iterator.Symbol)
-                        {
-                            list = iterator.listKlines;
-                        }
-                    }
-                }
                 List<OHLC> list_ohlc = new List<OHLC>();
-                double count = 0;
-                foreach (var it in list)
+
+                foreach (var it in list_candle_ohlc)
                 {
-                    list_ohlc.Add(new OHLC(Convert.ToDouble(it.Open), Convert.ToDouble(it.High), Convert.ToDouble(it.Low), Convert.ToDouble(it.Close), count));
-                    count += 1;
+                    list_ohlc.Add(new OHLC(Decimal.ToDouble(it.Open), Decimal.ToDouble(it.High), Decimal.ToDouble(it.Low), Decimal.ToDouble(it.Close), it.OpenTime, new TimeSpan(TimeSpan.TicksPerMinute)));
                 }
-                
+
+
+                List<OHLC> list_ohlc_copy = new List<OHLC>();
+                list_ohlc_copy = list_ohlc;
+                foreach (var it in list_ohlc_new)
+                {
+                    list_ohlc_copy.Add(it);
+                }
                 candlePlot = plt.Plot.AddCandlesticks(list_ohlc.ToArray());
                 candlePlot.YAxisIndex = 1;
 
@@ -134,9 +215,9 @@ namespace BinanceAlgorithmScottPlot
                     int sma_indi_short = Convert.ToInt32(text_short);
                     if (sma_indi_long > 1 && sma_indi_short > 1)
                     {
-                        plt.Plot.Remove(sma_long_plot);
-                        plt.Plot.Remove(sma_short_plot);
-                        var sma_long = candlePlot.GetSMA(sma_indi_long); 
+                        //plt.Plot.Remove(sma_long_plot);
+                        //plt.Plot.Remove(sma_short_plot);
+                        var sma_long = candlePlot.GetSMA(sma_indi_long);
                         var sma_short = candlePlot.GetSMA(sma_indi_short);
                         sma_long_plot = plt.Plot.AddScatterLines(sma_long.xs, sma_long.ys, Color.Cyan, 2, label: text_long + " minute SMA");
                         sma_short_plot = plt.Plot.AddScatterLines(sma_short.xs, sma_short.ys, Color.AntiqueWhite, 2, label: text_short + " minute SMA");
