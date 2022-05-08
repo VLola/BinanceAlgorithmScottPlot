@@ -41,6 +41,12 @@
     <Reference Include="CryptoExchange.Net, Version=5.1.7.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\CryptoExchange.Net.5.1.7\lib\netstandard2.0\CryptoExchange.Net.dll</HintPath>
     </Reference>
+    <Reference Include="Dapper, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Dapper.2.0.78\lib\net461\Dapper.dll</HintPath>
+    </Reference>
+    <Reference Include="Dapper.Contrib, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Dapper.Contrib.2.0.78\lib\net461\Dapper.Contrib.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=3.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.3.1.0\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
     </Reference>
@@ -89,6 +95,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Candlestick\FullListCandles.cs" />
+    <Compile Include="ConnectDB\Connect.cs" />
+    <Compile Include="ConnectDB\OHLC_NEW.cs" />
     <Compile Include="TimeFiles\CandleTime.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

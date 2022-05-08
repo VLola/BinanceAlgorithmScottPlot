@@ -37,6 +37,7 @@
             <Setter Property="VerticalScrollBarVisibility" Value="Visible" />
         </Style>
         <Style x:Key="styleTextBox" TargetType="TextBox">
+            <Setter Property="Margin" Value="5 0" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="Foreground" Value="Gray" />
@@ -51,8 +52,8 @@
         </Style>
         <Style x:Key="styleButton" TargetType="Button">
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="HorizontalAlignment" Value="Center" />
-            <Setter Property="Padding" Value="20 0" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="Margin" Value="10 0" />
             <Setter Property="Background" Value="Gray" />
             <Setter Property="Foreground" Value="White" />
         </Style>
@@ -70,21 +71,17 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="25*"/>
-            <RowDefinition Height="50*"/>
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="100*"/>
         </Grid.RowDefinitions>
         
         <!-- Menu -->
 
         <Grid Grid.Column="0" Grid.Row="0">
-            <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
 
             <!--Enter Login-->
 
-            <Grid Visibility="Hidden" x:Name="LOGIN_GRID" Grid.Row="0" Style="{DynamicResource styleGrid}">
+            <Grid Visibility="Hidden" x:Name="LOGIN_GRID" Style="{DynamicResource styleGrid}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
@@ -109,8 +106,10 @@
 
             <!--Exit Account-->
 
-            <Grid Visibility="Visible" x:Name="EXIT_GRID" Grid.Column="0" Grid.Row="0" Style="{DynamicResource styleGrid}">
+            <Grid Visibility="Visible" x:Name="EXIT_GRID" Style="{DynamicResource styleGrid}">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
@@ -119,87 +118,69 @@
                     <RowDefinition/>
                     <RowDefinition/>
                 </Grid.RowDefinitions>
-                <Button Content="Exit" Grid.Column="0" Grid.Row="0" Click="Exit_Click" Style="{DynamicResource styleButton}"/>
-                <Grid  Grid.Column="1" Grid.Row="0" HorizontalAlignment="Center">
+                <Button Content="Start connect" Grid.Column="0" Grid.Row="0" Click="Button_StartConnect" Style="{DynamicResource styleButton}"/>
+                <Grid  Grid.Column="1" Grid.Row="0">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition/>
+                        <ColumnDefinition Width="10*"/>
+                        <ColumnDefinition Width="5*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0" Content="Server time:" Style="{DynamicResource styleLabel}"/>
+                    <TextBlock x:Name="SERVER_TIME" Grid.Column="1" Text="null" Style="{DynamicResource styleTextBlock}"/>
+                </Grid>
+                <ComboBox x:Name="LIST_SYMBOLS" Grid.Column="2" Grid.Row="0" Style="{DynamicResource styleComboBox}"/>
+                <Button Content="Exit" Grid.Column="3" Grid.Row="0" Click="Exit_Click" Style="{DynamicResource styleButton}"/>
+                <Grid Grid.Column="0" Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="10*"/>
+                        <ColumnDefinition Width="5*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0" Content="Online:" Style="{DynamicResource styleLabel}"/>
+                    <CheckBox x:Name="online_chart" Grid.Column="1" IsChecked="True" VerticalAlignment="Center"/>
+                </Grid>
+                
+                <Button Visibility="Hidden" Content="Refile" Grid.Column="0" Grid.Row="1" Click="Button_Refile" Style="{DynamicResource styleButton}"/>
+                
+                <Grid  Grid.Column="1" Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="10*"/>
+                        <ColumnDefinition Width="5*"/>
                     </Grid.ColumnDefinitions>
                     <Label Grid.Column="0" Content="Count candles:" Style="{DynamicResource styleLabel}"/>
                     <TextBox x:Name="COUNT_CANDLES" Text="100" Grid.Column="1" Style="{DynamicResource styleTextBox}"/>
                 </Grid>
-                <Button Content="Start connect" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Left" Click="Button_StartConnect" Style="{DynamicResource styleButton}"/>
-                <Button Content="Refile" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Right" Click="Button_StartConnect1" Style="{DynamicResource styleButton}"/>
-                <Grid Grid.Column="1" Grid.Row="1">
+                <Grid Grid.Column="2" Grid.Row="1">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition/>
+                        <ColumnDefinition Width="10*"/>
+                        <ColumnDefinition Width="5*"/>
                     </Grid.ColumnDefinitions>
-                    <Grid Grid.Column="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                        </Grid.ColumnDefinitions>
-                        <Label Grid.Column="0" Content="SMA:" Style="{DynamicResource styleLabel}"/>
-                        <TextBox x:Name="SMA_LONG" Text="20" Grid.Column="1" Style="{DynamicResource styleTextBox}"/>
-                    </Grid>
-                    <Grid Grid.Column="1">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                        </Grid.ColumnDefinitions>
-                        <Label Grid.Column="0" Content="SMA:" Style="{DynamicResource styleLabel}"/>
-                        <TextBox x:Name="SMA_SHORT" Text="2" Grid.Column="1" Style="{DynamicResource styleTextBox}"/>
-                    </Grid>
+                    <Label Grid.Column="0" Content="SMA long:" Style="{DynamicResource styleLabel}"/>
+                    <TextBox x:Name="SMA_LONG" Text="20" Grid.Column="1" Style="{DynamicResource styleTextBox}"/>
                 </Grid>
-                <Grid  Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center">
+                <Grid Grid.Column="3" Grid.Row="1">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition/>
+                        <ColumnDefinition Width="10*"/>
+                        <ColumnDefinition Width="5*"/>
                     </Grid.ColumnDefinitions>
-                    <Label Grid.Column="0" Content="Server time:" Style="{DynamicResource styleLabel}"/>
-                    <TextBlock x:Name="SERVER_TIME" Grid.Column="1" Text="null"  Style="{DynamicResource styleTextBlock}"/>
+                    <Label Grid.Column="0" Content="SMA short:" Style="{DynamicResource styleLabel}"/>
+                    <TextBox x:Name="SMA_SHORT" Text="2" Grid.Column="1" Style="{DynamicResource styleTextBox}"/>
                 </Grid>
-                <ComboBox x:Name="LIST_SYMBOLS" SelectionChanged="ComboBox_SelectionChanged" Grid.Column="1" Grid.Row="2" Style="{DynamicResource styleComboBox}"/>
-            </Grid>
-
-            <!--Algorithm-->
-
-            <Grid Grid.Row="1" Visibility="Visible" Style="{DynamicResource styleGrid}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition></RowDefinition>
-                    <RowDefinition></RowDefinition>
-                    <RowDefinition></RowDefinition>
-                </Grid.RowDefinitions>
-
-                <Button x:Name="START_ASYNC" Grid.Column="0" Grid.Row="0" Content="Start Async" Style="{DynamicResource styleButton}"/>
-                <Button x:Name="STOP_ASYNC" Grid.Column="1" Grid.Row="0" Content="Stopt Async" Style="{DynamicResource styleButton}"/>
-
+                
+                <Button Visibility="Hidden" x:Name="START_ASYNC" Grid.Column="0" Grid.Row="2" Content="Start Async" Style="{DynamicResource styleButton}"/>
+                <Button Visibility="Visible" x:Name="STOP_ASYNC" Grid.Column="0" Grid.Row="2" Content="Disconnect" Style="{DynamicResource styleButton}"/>
+                <Button Visibility="Hidden" x:Name="DELETE_TABLE" Grid.Column="0" Grid.Row="2" Content="DELETE_TABLE" Style="{DynamicResource styleButton}"/>
             </Grid>
 
         </Grid>
 
         <!--Error Block-->
-        
-        <Grid Grid.Column="2" Grid.Row="0">
-            <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
-            <Grid Grid.Row="0" Style="{DynamicResource styleGrid}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="10*"/>
-                    <ColumnDefinition Width="50*"/>
-                </Grid.ColumnDefinitions>
-                <Button Grid.Column="0" Content="Clear errors" Click="Button_ClearErrors" Style="{DynamicResource styleButtonLeftBottom}"/>
-                <TextBox Grid.Column="1" x:Name="ERROR_LOG" Style="{DynamicResource styleTextBoxErrors}"/>
-            </Grid>
+
+        <Grid Grid.Column="2" Grid.Row="0" Style="{DynamicResource styleGrid}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="10*"/>
+                <ColumnDefinition Width="50*"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Content="Clear errors" Click="Button_ClearErrors" Style="{DynamicResource styleButtonLeftBottom}"/>
+            <TextBox Grid.Column="1" x:Name="ERROR_LOG" Style="{DynamicResource styleTextBoxErrors}"/>
         </Grid>
         <Grid Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3" Style="{DynamicResource styleGrid}">
             <WpfPlot Name="plt"/>
