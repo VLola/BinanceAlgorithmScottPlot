@@ -117,10 +117,12 @@ namespace BinanceAlgorithmScottPlot
                 if (sma_indi_short > 1)
                 {
                     plt.Plot.Remove(sma_short_plot);
-                    var sma_short = candlePlot.GetSMA(sma_indi_short);
+                    sma_short = candlePlot.GetSMA(sma_indi_short);
                     sma_short_plot = plt.Plot.AddScatterLines(sma_short.xs, sma_short.ys, Color.AntiqueWhite, 2, label: text_short + " minute SMA");
                     sma_short_plot.YAxisIndex = 1;
                     plt.Refresh();
+
+                    StartAlgorithm();
                 }
             }
         }
@@ -134,10 +136,12 @@ namespace BinanceAlgorithmScottPlot
                 if (sma_indi_long > 1)
                 {
                     plt.Plot.Remove(sma_long_plot);
-                    var sma_long = candlePlot.GetSMA(sma_indi_long);
+                    sma_long = candlePlot.GetSMA(sma_indi_long);
                     sma_long_plot = plt.Plot.AddScatterLines(sma_long.xs, sma_long.ys, Color.Cyan, 2, label: text_long + " minute SMA");
                     sma_long_plot.YAxisIndex = 1;
                     plt.Refresh();
+
+                    StartAlgorithm();
                 }
             }
         }
@@ -152,7 +156,7 @@ namespace BinanceAlgorithmScottPlot
             StopAsync();
             Connect.DeleteAll();
             Refile(); 
-            if (online_chart.IsChecked == true) StartAsync();
+            if (ONLINE_CHART.IsChecked == true) StartAsync();
             startLoadChart();
         }
         private void startLoadChart()
@@ -162,6 +166,7 @@ namespace BinanceAlgorithmScottPlot
                 string symbol = LIST_SYMBOLS.Text;
                 if (symbol != "")
                 {
+                    Price();
                     list_candle_ohlc.Clear();
                     List<OHLC_NEW> olhc_new = new List<OHLC_NEW>();
                     olhc_new = Connect.Get();
@@ -204,52 +209,7 @@ namespace BinanceAlgorithmScottPlot
                         sma_short_plot = plt.Plot.AddScatterLines(sma_short.xs, sma_short.ys, Color.AntiqueWhite, 2, label: text_short + " minute SMA");
                         sma_long_plot.YAxisIndex = 1;
                         sma_short_plot.YAxisIndex = 1;
-
-                        history.Clear();
-                        int count = sma_short.xs.Length - sma_long.xs.Length;
-
-                        int _short = 0;
-                        int _long = 0;
-                        int _long_short = 0;
-                        int long_positive = 0;
-                        int short_positive = 0;
-                        double price_sma_long = 0;
-                        double price_long = 0;
-                        double price_short = 0;
-
-                        bool temp_up = false;
-                        if (sma_short.ys[0 + count] > sma_long.ys[0]) temp_up = true;
-
-                        for (int i = 0; i < sma_long.xs.Length; i++)
-                        {
-                            if (sma_short.ys[i + count] > sma_long.ys[i] && !temp_up) 
-                            { 
-                                if(_long_short > 1)
-                                {
-                                    price_short += price_sma_long - sma_long.ys[i];
-                                    _short++;
-                                    if (price_sma_long - sma_long.ys[i] > 0) short_positive++;
-                                }
-                                price_sma_long = sma_long.ys[i];
-                                temp_up = true;
-                                _long_short++;
-                            }
-                            else if (sma_short.ys[i + count] < sma_long.ys[i] && temp_up) 
-                            {
-                                if (_long_short > 1)
-                                {
-                                    price_long += sma_long.ys[i] - price_sma_long;
-                                    _long++;
-                                    if (sma_long.ys[i] - price_sma_long > 0) long_positive++;
-                                }
-                                price_sma_long = sma_long.ys[i];
-                                temp_up = false;
-                                _long_short++;
-                            }
-
-                        }
-                        history.Add(new HistoryList(LIST_SYMBOLS.Text, _long, long_positive, price_long, _short, short_positive, price_short));
-                        HistoryList.Items.Refresh();
+                        StartAlgorithm();
                     }
                     
                 }
@@ -260,6 +220,165 @@ namespace BinanceAlgorithmScottPlot
             {
                 ErrorText.Add($"LoadChart {e.Message}");
             }
+        }
+        #endregion
+
+        #region - Algorithm statistic -
+        public long order_id = 0;
+        decimal quantity;
+        public bool start;
+        public bool position;
+        public bool temp_position;
+        public bool start_programm = true;
+        private void Position() {
+            try
+            {
+                if (sma_short.ys[sma_short.ys.Length - 1] < sma_long.ys[sma_long.ys.Length - 1]) position = false;
+                else position = true;
+            }
+            catch (Exception c)
+            {
+                ErrorText.Add($"Position {c.Message}");
+            }
+        }
+        private void TempPosition()
+        {
+            try
+            {
+                if (sma_short.ys[sma_short.ys.Length - 1] < sma_long.ys[sma_long.ys.Length - 1]) temp_position = false;
+                else temp_position = true;
+            }
+            catch (Exception c)
+            {
+                ErrorText.Add($"TempPosition {c.Message}");
+            }
+        }
+        private void StartAlgorithm()
+        {
+            try
+            {
+                if (START_BET.IsChecked == true && ONLINE_CHART.IsChecked == true)
+                {
+                    Position();
+
+                    if (start_programm)
+                    {
+                        TempPosition();
+                        start_programm = false;
+                    }
+
+                    if (position == true && temp_position == false) start = true;
+                    else if (position == false && temp_position == true) start = true;
+
+                    TempPosition();
+                }
+
+
+                //-------------------------------------------------------------------Bet
+                if (START_BET.IsChecked == true && ONLINE_CHART.IsChecked == true && start)
+                {
+                    OrderSide side;
+                    FuturesOrderType type = FuturesOrderType.Market;
+                    PositionSide position_side;
+
+                    if (order_id != 0)
+                    {
+                        position_side = InfoOrderPositionSide();
+                        side = OrderSide.Sell;
+                        OpenOrder(side, type, quantity, position_side);
+                        order_id = 0;
+                    }
+                    side = OrderSide.Buy;
+                    if (sma_short.ys[sma_short.ys.Length - 1] < sma_long.ys[sma_long.ys.Length - 1]) position_side = PositionSide.Short;
+                    else position_side = PositionSide.Long;
+
+                    quantity = Math.Round(Decimal.Parse(USDT_BET.Text) / Price(), 1);
+
+                    order_id = OpenOrder(side, type, quantity, position_side);
+                    if (order_id != 0) start = false;
+                }
+
+                //------------------------------------------------------------------Statistic
+                history.Clear();
+                int count = sma_short.xs.Length - sma_long.xs.Length;
+
+                int _short = 0;
+                int _long = 0;
+                int _long_short = 0;
+                int long_positive = 0;
+                int short_positive = 0;
+                double price_sma_long = 0;
+                double price_long = 0;
+                double price_short = 0;
+
+                bool temp_up = false;
+                if (sma_short.ys[0 + count] > sma_long.ys[0]) temp_up = true;
+
+                for (int i = 0; i < sma_long.xs.Length; i++)
+                {
+                    if (sma_short.ys[i + count] > sma_long.ys[i] && !temp_up)
+                    {
+                        if (_long_short > 1)
+                        {                                                  //формула
+                            double price = -(sma_long.ys[i] - price_sma_long) / price_sma_long * 100;
+                            price_short += price;
+                            _short++;
+                            if (price_sma_long - sma_long.ys[i] > 0) short_positive++;
+                        }
+                        price_sma_long = sma_long.ys[i];
+                        temp_up = true;
+                        _long_short++;
+                    }
+                    else if (sma_short.ys[i + count] < sma_long.ys[i] && temp_up)
+                    {
+                        if (_long_short > 1)
+                        {                                                  //формула
+                            double price = (sma_long.ys[i] - price_sma_long) / price_sma_long * 100;
+                            price_long += price;
+                            _long++;
+                            if (sma_long.ys[i] - price_sma_long > 0) long_positive++;
+                        }
+                        price_sma_long = sma_long.ys[i];
+                        temp_up = false;
+                        _long_short++;
+                    }
+
+                }
+                history.Add(new HistoryList(LIST_SYMBOLS.Text, _long, long_positive, price_long, _short, short_positive, price_short));
+                HistoryList.Items.Refresh();
+            }
+            catch (Exception c)
+            {
+                ErrorText.Add($"StartAlgorithm {c.Message}");
+            }
+        }
+        #endregion
+
+        #region - Order -
+        public long OpenOrder(OrderSide side, FuturesOrderType type, decimal quantity, PositionSide position_side)
+        {
+            string symbol = LIST_SYMBOLS.Text;
+            var result = socket.futures.Trading.PlaceOrderAsync(symbol: symbol, side: side, type: type, quantity: quantity, positionSide: position_side).Result;
+            if (!result.Success) ErrorText.Add($"Failed OpenOrder: {result.Error.Message}");
+            return result.Data.Id;
+        }
+        public PositionSide InfoOrderPositionSide()
+        {
+            string symbol = LIST_SYMBOLS.Text;
+            var result = socket.futures.Trading.GetOrderAsync(symbol: symbol, orderId: order_id).Result;
+            if (!result.Success)
+            {
+                ErrorText.Add($"InfoOrderPositionSide: {result.Error.Message}");
+                return InfoOrderPositionSide();
+            }
+            return result.Data.PositionSide;
+        }
+        public decimal Price()
+        {
+            string symbol = LIST_SYMBOLS.Text;
+            var result = socket.futures.ExchangeData.GetPriceAsync(symbol).Result.Data;
+            PRICE_SUMBOL.Text = result.Price.ToString();
+            return result.Price;
         }
         #endregion
 
