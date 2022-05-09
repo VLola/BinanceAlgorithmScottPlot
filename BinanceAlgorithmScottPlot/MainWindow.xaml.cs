@@ -26,6 +26,7 @@ using Binance.Net.Objects.Models.Spot.Socket;
 using Binance.Net.Interfaces;
 using Binance.Net.Clients;
 using BinanceAlgorithmScottPlot.ConnectDB;
+using BinanceAlgorithmScottPlot.History;
 
 namespace BinanceAlgorithmScottPlot
 {
@@ -57,6 +58,7 @@ namespace BinanceAlgorithmScottPlot
             STOP_ASYNC.Click += STOP_ASYNC_Click;
             LIST_SYMBOLS.DropDownClosed += LIST_SYMBOLS_DropDownClosed;
             DELETE_TABLE.Click += DELETE_TABLE_Click;
+            HistoryList.ItemsSource = history;
         }
 
         private void DELETE_TABLE_Click(object sender, RoutedEventArgs e)
@@ -175,7 +177,9 @@ namespace BinanceAlgorithmScottPlot
                 ErrorText.Add($"ComboBox_SelectionChanged {c.Message}");
             }
         }
-
+        public List<HistoryList> history = new List<HistoryList>();
+        public (double[] xs, double[] ys) sma_long;
+        public (double[] xs, double[] ys) sma_short;
         private void LoadChart()
         {
             try
@@ -194,14 +198,60 @@ namespace BinanceAlgorithmScottPlot
                     int sma_indi_short = Convert.ToInt32(text_short);
                     if (sma_indi_long > 1 && sma_indi_short > 1)
                     {
-                        var sma_long = candlePlot.GetSMA(sma_indi_long);
-                        var sma_short = candlePlot.GetSMA(sma_indi_short);
+                        sma_long = candlePlot.GetSMA(sma_indi_long);
+                        sma_short = candlePlot.GetSMA(sma_indi_short);
                         sma_long_plot = plt.Plot.AddScatterLines(sma_long.xs, sma_long.ys, Color.Cyan, 2, label: text_long + " minute SMA");
                         sma_short_plot = plt.Plot.AddScatterLines(sma_short.xs, sma_short.ys, Color.AntiqueWhite, 2, label: text_short + " minute SMA");
                         sma_long_plot.YAxisIndex = 1;
                         sma_short_plot.YAxisIndex = 1;
-                    }
 
+                        history.Clear();
+                        int count = sma_short.xs.Length - sma_long.xs.Length;
+
+                        int _short = 0;
+                        int _long = 0;
+                        int _long_short = 0;
+                        int long_positive = 0;
+                        int short_positive = 0;
+                        double price_sma_long = 0;
+                        double price_long = 0;
+                        double price_short = 0;
+
+                        bool temp_up = false;
+                        if (sma_short.ys[0 + count] > sma_long.ys[0]) temp_up = true;
+
+                        for (int i = 0; i < sma_long.xs.Length; i++)
+                        {
+                            if (sma_short.ys[i + count] > sma_long.ys[i] && !temp_up) 
+                            { 
+                                if(_long_short > 1)
+                                {
+                                    price_short += price_sma_long - sma_long.ys[i];
+                                    _short++;
+                                    if (price_sma_long - sma_long.ys[i] > 0) short_positive++;
+                                }
+                                price_sma_long = sma_long.ys[i];
+                                temp_up = true;
+                                _long_short++;
+                            }
+                            else if (sma_short.ys[i + count] < sma_long.ys[i] && temp_up) 
+                            {
+                                if (_long_short > 1)
+                                {
+                                    price_long += sma_long.ys[i] - price_sma_long;
+                                    _long++;
+                                    if (sma_long.ys[i] - price_sma_long > 0) long_positive++;
+                                }
+                                price_sma_long = sma_long.ys[i];
+                                temp_up = false;
+                                _long_short++;
+                            }
+
+                        }
+                        history.Add(new HistoryList(LIST_SYMBOLS.Text, _long, long_positive, price_long, _short, short_positive, price_short));
+                        HistoryList.Items.Refresh();
+                    }
+                    
                 }
 
                 plt.Refresh();

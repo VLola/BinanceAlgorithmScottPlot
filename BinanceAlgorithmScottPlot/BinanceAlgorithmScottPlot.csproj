@@ -97,6 +97,7 @@
     <Compile Include="Candlestick\FullListCandles.cs" />
     <Compile Include="ConnectDB\Connect.cs" />
     <Compile Include="ConnectDB\OHLC_NEW.cs" />
+    <Compile Include="History\HistoryList.cs" />
     <Compile Include="TimeFiles\CandleTime.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

@@ -66,9 +66,9 @@
     </Window.Resources>
     <Grid Style="{DynamicResource styleGridMain}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
+            <ColumnDefinition Width="100*"/>
+            <ColumnDefinition Width="150*"/>
+            <ColumnDefinition Width="50*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="20*"/>
@@ -135,7 +135,7 @@
                         <ColumnDefinition Width="5*"/>
                     </Grid.ColumnDefinitions>
                     <Label Grid.Column="0" Content="Online:" Style="{DynamicResource styleLabel}"/>
-                    <CheckBox x:Name="online_chart" Grid.Column="1" IsChecked="True" VerticalAlignment="Center"/>
+                    <CheckBox x:Name="online_chart" Grid.Column="1" IsChecked="False" VerticalAlignment="Center"/>
                 </Grid>
                 
                 <Button Visibility="Hidden" Content="Refile" Grid.Column="0" Grid.Row="1" Click="Button_Refile" Style="{DynamicResource styleButton}"/>
@@ -172,6 +172,19 @@
 
         </Grid>
 
+        <ListView Grid.Column="1" Grid.Row="0" Foreground="White" Background="Black" x:Name="HistoryList">
+            <ListView.View >
+                <GridView>
+                    <GridViewColumn DisplayMemberBinding="{Binding Symbol}" Width="100" Header="Symbol"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding Long}" Width="100" Header="Long"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding long_positive}" Width="100" Header="long-positive"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding price_long}" Width="100" Header="price-long"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding Short}" Width="100" Header="Short"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding short_positive}" Width="100" Header="short-positive"/>
+                    <GridViewColumn DisplayMemberBinding="{Binding price_short}" Width="100" Header="price-short"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
         <!--Error Block-->
 
         <Grid Grid.Column="2" Grid.Row="0" Style="{DynamicResource styleGrid}">
@@ -179,7 +192,7 @@
                 <ColumnDefinition Width="10*"/>
                 <ColumnDefinition Width="50*"/>
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0" Content="Clear errors" Click="Button_ClearErrors" Style="{DynamicResource styleButtonLeftBottom}"/>
+            <Button Grid.Column="0" Content="Clear" Click="Button_ClearErrors" Style="{DynamicResource styleButtonLeftBottom}"/>
             <TextBox Grid.Column="1" x:Name="ERROR_LOG" Style="{DynamicResource styleTextBoxErrors}"/>
         </Grid>
         <Grid Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3" Style="{DynamicResource styleGrid}">
