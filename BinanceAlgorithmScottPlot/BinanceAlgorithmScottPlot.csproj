@@ -119,11 +119,8 @@
     </ApplicationDefinition>
     <Compile Include="Algorithm\AlgorithmBet.cs" />
     <Compile Include="Candlestick\FullListCandles.cs" />
-    <Compile Include="Chart\LoadChart.cs" />
     <Compile Include="ConnectDB\Connect.cs" />
     <Compile Include="ConnectDB\OHLC_NEW.cs" />
-    <Compile Include="History\HistoryList.cs" />
-    <Compile Include="TimeFiles\CandleTime.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -138,6 +135,8 @@
     <Compile Include="Candlestick\Candle.cs" />
     <Compile Include="Candlestick\ListCandles.cs" />
     <Compile Include="Errors\ErrorText.cs" />
+    <Compile Include="Interval\Interval.cs" />
+    <Compile Include="Interval\IntervalCandles.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -171,6 +170,11 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <Content Include="Resources\Audio\wav_1.wav" />
+    <Content Include="Resources\Audio\wav_2.wav" />
+    <Content Include="Resources\Audio\wav_3.wav" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
