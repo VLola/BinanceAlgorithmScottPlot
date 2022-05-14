@@ -118,7 +118,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Algorithm\AlgorithmBet.cs" />
-    <Compile Include="Candlestick\FullListCandles.cs" />
     <Compile Include="ConnectDB\Connect.cs" />
     <Compile Include="ConnectDB\OHLC_NEW.cs" />
     <Page Include="MainWindow.xaml">
@@ -132,8 +131,6 @@
     <Compile Include="Binance\Client.cs" />
     <Compile Include="Binance\ClientList.cs" />
     <Compile Include="Binance\Socket.cs" />
-    <Compile Include="Candlestick\Candle.cs" />
-    <Compile Include="Candlestick\ListCandles.cs" />
     <Compile Include="Errors\ErrorText.cs" />
     <Compile Include="Interval\Interval.cs" />
     <Compile Include="Interval\IntervalCandles.cs" />

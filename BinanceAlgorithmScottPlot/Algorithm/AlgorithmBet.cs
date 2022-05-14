@@ -2,14 +2,10 @@
 using Binance.Net.Objects.Models.Futures;
 using BinanceAlgorithmScottPlot.Binance;
 using BinanceAlgorithmScottPlot.Errors;
-using ScottPlot;
-using ScottPlot.Plottable;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Media;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BinanceAlgorithmScottPlot.Algorithm
 {

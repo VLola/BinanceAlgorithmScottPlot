@@ -8,7 +8,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Newtonsoft.Json;
-using BinanceAlgorithmScottPlot.Candlestick;
 using Binance.Net.Enums;
 using ScottPlot;
 using System.Drawing;
@@ -30,8 +29,6 @@ namespace BinanceAlgorithmScottPlot
         public IntervalCandles IntervalCandles = new IntervalCandles();
         public List<string> interval = new List<string>();
         public List<string> list_sumbols_name = new List<string>();
-        public List<ListCandles> list_listcandles = new List<ListCandles>();
-        public List<FullListCandles> full_list_candles = new List<FullListCandles>();
         public FinancePlot candlePlot;
         public ScatterPlot sma_long_plot;
         public ScatterPlot bolinger2;
