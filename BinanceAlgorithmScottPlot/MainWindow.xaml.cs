@@ -17,6 +17,7 @@ using BinanceAlgorithmScottPlot.ConnectDB;
 using System.Windows.Threading;
 using Binance.Net.Objects.Models.Futures;
 using BinanceAlgorithmScottPlot.Interval;
+using BinanceAlgorithmScottPlot.Model;
 
 namespace BinanceAlgorithmScottPlot
 {
@@ -58,6 +59,13 @@ namespace BinanceAlgorithmScottPlot
             SMA_LONG.TextChanged += SMA_LONG_TextChanged;
             COUNT_CANDLES.TextChanged += COUNT_CANDLES_TextChanged;
             TabHistory.MouseLeftButtonDown += TabHistory_MouseLeftButtonDown;
+
+
+            // Create Table
+            //using (ModelBinanceFuturesOrder context = new ModelBinanceFuturesOrder())
+            //{
+            //    context.BinanceFuturesOrders.Create();
+            //}
         }
 
         private void TabHistory_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -94,8 +102,10 @@ namespace BinanceAlgorithmScottPlot
             string symbol = LIST_SYMBOLS.Text;
             if (symbol != "")
             {
+                ConnectOrder.DeleteAll();
                 foreach (var it in Algorithm.AlgorithmBet.InfoOrder(socket, symbol, start_time))
                 {
+                    ConnectOrder.Insert(it);
                     if (it.PositionSide == PositionSide.Long && it.Side == OrderSide.Buy)
                     {
                         long_open_order_x.Add(it.CreateTime.ToOADate());

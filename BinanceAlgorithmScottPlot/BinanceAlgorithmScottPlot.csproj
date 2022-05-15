@@ -96,6 +96,8 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
     </Reference>
@@ -119,6 +121,7 @@
     </ApplicationDefinition>
     <Compile Include="Algorithm\AlgorithmBet.cs" />
     <Compile Include="ConnectDB\Connect.cs" />
+    <Compile Include="ConnectDB\ConnectOrder.cs" />
     <Compile Include="ConnectDB\OHLC_NEW.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -132,6 +135,7 @@
     <Compile Include="Binance\ClientList.cs" />
     <Compile Include="Binance\Socket.cs" />
     <Compile Include="Errors\ErrorText.cs" />
+    <Compile Include="History\HistoryOrders.cs" />
     <Compile Include="Interval\Interval.cs" />
     <Compile Include="Interval\IntervalCandles.cs" />
     <Compile Include="MainWindow.xaml.cs">
@@ -140,6 +144,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Model\ModelBinanceFuturesOrder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

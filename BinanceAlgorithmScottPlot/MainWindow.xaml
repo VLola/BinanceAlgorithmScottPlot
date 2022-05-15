@@ -258,7 +258,7 @@
             </TabItem>
             <TabItem Header="History" Name="TabHistory">
                 <Grid>
-                    <ListView Grid.Column="1" Grid.Row="0" Foreground="White" Background="Black" x:Name="HistoryList">
+                    <ListView Grid.Column="1" Grid.Row="0" Foreground="White" Background="Black" x:Name="HistoryListOrders">
                         <ListView.View >
                             <GridView>
                                 <GridViewColumn DisplayMemberBinding="{Binding Symbol}" Width="100" Header="Symbol"/>
