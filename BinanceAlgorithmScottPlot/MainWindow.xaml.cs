@@ -18,6 +18,7 @@ using System.Windows.Threading;
 using Binance.Net.Objects.Models.Futures;
 using BinanceAlgorithmScottPlot.Interval;
 using BinanceAlgorithmScottPlot.Model;
+using BinanceAlgorithmScottPlot.Objects;
 
 namespace BinanceAlgorithmScottPlot
 {
@@ -65,6 +66,11 @@ namespace BinanceAlgorithmScottPlot
             //using (ModelBinanceFuturesOrder context = new ModelBinanceFuturesOrder())
             //{
             //    context.BinanceFuturesOrders.Create();
+            //}
+            // Create Table
+            //using (ModelHistoryOrder context = new ModelHistoryOrder())
+            //{
+            //    context.HistoryOrders.Create();
             //}
         }
 
@@ -141,7 +147,7 @@ namespace BinanceAlgorithmScottPlot
                 if (Convert.ToInt32(count_candles) > Convert.ToInt32(text_long) && Convert.ToInt32(count_candles) < 500)
                 {
                     StopAsync();
-                    Connect.DeleteAll();
+                    ConnectOHLC_NEW.DeleteAll();
                     LoadCandles();
                     if (ONLINE_CHART.IsChecked == true) StartKlineAsync();
                     startLoadChart();
@@ -155,7 +161,7 @@ namespace BinanceAlgorithmScottPlot
             interval_time = IntervalCandles.Intervals[index].interval;
             timeSpan = new TimeSpan(IntervalCandles.Intervals[index].timespan);
             StopAsync();
-            Connect.DeleteAll();
+            ConnectOHLC_NEW.DeleteAll();
             LoadCandles();
             if (ONLINE_CHART.IsChecked == true) StartKlineAsync();
             startLoadChart();
@@ -176,7 +182,7 @@ namespace BinanceAlgorithmScottPlot
         private void LIST_SYMBOLS_DropDownClosed(object sender, EventArgs e)
         {
             StopAsync();
-            Connect.DeleteAll();
+            ConnectOHLC_NEW.DeleteAll();
             LoadCandles();
             if (ONLINE_CHART.IsChecked == true) StartKlineAsync();
             startLoadChart();
@@ -190,7 +196,7 @@ namespace BinanceAlgorithmScottPlot
                 {
                     list_candle_ohlc.Clear();
                     List<OHLC_NEW> olhc_new = new List<OHLC_NEW>();
-                    olhc_new = Connect.Get();
+                    olhc_new = ConnectOHLC_NEW.Get();
                     foreach (OHLC_NEW it in olhc_new)
                     {
                         list_candle_ohlc.Add(new OHLC(Decimal.ToDouble(it.Open), Decimal.ToDouble(it.High), Decimal.ToDouble(it.Low), Decimal.ToDouble(it.Close), it.DateTime, timeSpan));
@@ -619,13 +625,13 @@ namespace BinanceAlgorithmScottPlot
             {
                 Dispatcher.Invoke(new Action(() =>
                 {
-                    if (ohlc_item.DateTime == Message.Data.Data.OpenTime) Connect.Delete(Id);
+                    if (ohlc_item.DateTime == Message.Data.Data.OpenTime) ConnectOHLC_NEW.Delete(Id);
                     ohlc_item.DateTime = Message.Data.Data.OpenTime;
                     ohlc_item.Open = Message.Data.Data.OpenPrice;
                     ohlc_item.High = Message.Data.Data.HighPrice;
                     ohlc_item.Low = Message.Data.Data.LowPrice;
                     ohlc_item.Close = Message.Data.Data.ClosePrice;
-                    Id = Convert.ToInt32(Connect.Insert(ohlc_item));
+                    Id = Convert.ToInt32(ConnectOHLC_NEW.Insert(ohlc_item));
                     startLoadChart();
                 }));
             });
@@ -660,7 +666,7 @@ namespace BinanceAlgorithmScottPlot
                         ohlc_item.High = it.HighPrice;
                         ohlc_item.Low = it.LowPrice;
                         ohlc_item.Close = it.ClosePrice;
-                        Id = Convert.ToInt32(Connect.Insert(ohlc_item));
+                        Id = Convert.ToInt32(ConnectOHLC_NEW.Insert(ohlc_item));
                     }
                 }
             }

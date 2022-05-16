@@ -120,9 +120,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Algorithm\AlgorithmBet.cs" />
-    <Compile Include="ConnectDB\Connect.cs" />
+    <Compile Include="ConnectDB\ConnectHistoryOrder.cs" />
+    <Compile Include="ConnectDB\ConnectOHLC_NEW.cs" />
     <Compile Include="ConnectDB\ConnectOrder.cs" />
-    <Compile Include="ConnectDB\OHLC_NEW.cs" />
+    <Compile Include="Objects\OHLC_NEW.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -135,7 +136,7 @@
     <Compile Include="Binance\ClientList.cs" />
     <Compile Include="Binance\Socket.cs" />
     <Compile Include="Errors\ErrorText.cs" />
-    <Compile Include="History\HistoryOrders.cs" />
+    <Compile Include="Objects\HistoryOrder.cs" />
     <Compile Include="Interval\Interval.cs" />
     <Compile Include="Interval\IntervalCandles.cs" />
     <Compile Include="MainWindow.xaml.cs">
@@ -145,6 +146,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\ModelBinanceFuturesOrder.cs" />
+    <Compile Include="Model\ModelHistoryOrder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

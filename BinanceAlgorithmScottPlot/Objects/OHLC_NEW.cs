@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BinanceAlgorithmScottPlot.ConnectDB
+namespace BinanceAlgorithmScottPlot.Objects
 {
     public class OHLC_NEW
     {
