@@ -46,12 +46,14 @@ namespace BinanceAlgorithmScottPlot
         public List<BinanceFuturesUsdtTrade> history;
         public KlineInterval interval_time = KlineInterval.OneMinute;
         public TimeSpan timeSpan = new TimeSpan(TimeSpan.TicksPerMinute);
+        public List<HistoryOrder> history_order = new List<HistoryOrder>();
         public MainWindow()
         {
             InitializeComponent();
             ErrorWatcher();
             Chart();
             Clients();
+            HISTORY_ORDER.ItemsSource = history_order;
             INTERVAL_TIME.ItemsSource = IntervalCandles.Intervals;
             INTERVAL_TIME.SelectedIndex = 0;
             LIST_SYMBOLS.ItemsSource = list_sumbols_name;
@@ -59,31 +61,66 @@ namespace BinanceAlgorithmScottPlot
             LOGIN_GRID.Visibility = Visibility.Visible;
             SMA_LONG.TextChanged += SMA_LONG_TextChanged;
             COUNT_CANDLES.TextChanged += COUNT_CANDLES_TextChanged;
-            TabHistory.MouseLeftButtonDown += TabHistory_MouseLeftButtonDown;
+            TAB_CONTROL.MouseLeftButtonUp += TAB_CONTROL_MouseLeftButtonUp;
 
 
-            // Create Table
-            //using (ModelBinanceFuturesOrder context = new ModelBinanceFuturesOrder())
-            //{
-            //    context.BinanceFuturesOrders.Create();
-            //}
-            // Create Table
-            //using (ModelHistoryOrder context = new ModelHistoryOrder())
-            //{
-            //    context.HistoryOrders.Create();
-            //}
+            //Create Table BinanceFuturesOrders
+            using (ModelBinanceFuturesOrder context = new ModelBinanceFuturesOrder())
+            {
+                context.BinanceFuturesOrders.Create();
+            }
+            //Create Table HistoryOrders
+            using (ModelHistoryOrder context = new ModelHistoryOrder())
+            {
+                context.HistoryOrders.Create();
+            }
         }
 
-        private void TabHistory_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void TAB_CONTROL_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            //string symbol = LIST_SYMBOLS.Text;
-            //var result = socket.futures.ExchangeData.GetAggregatedTradeHistoryAsync(symbol: symbol).Result;
-            //if (!result.Success)
-            //{
-            //    ErrorText.Add($"InfoOrderPositionSide: {result.Error.Message}");
-            //}
-            //history = result.Data.ToList();
+            History();
+            foreach (var it in ConnectHistoryOrder.Get()) history_order.Insert(0, it);
+            HISTORY_ORDER.Items.Refresh();
         }
+
+        private void History()
+        {
+            history_order.Clear();
+            ConnectHistoryOrder.DeleteAll();
+            List<BinanceFuturesOrder> orders = ConnectOrder.Get();
+            int i = 0;
+            foreach(var it in ConnectOrder.Get())
+            {
+                if(i != 0 && it.PositionSide == PositionSide.Long && it.Side == OrderSide.Sell)
+                {
+                    ConnectHistoryOrder.Insert(new HistoryOrder(it.CreateTime, it.Symbol, Convert.ToDouble(orders[i-1].AvgPrice), Convert.ToDouble(it.AvgPrice), Convert.ToDouble(orders[i-1].QuoteQuantityFilled), Convert.ToDouble(it.QuoteQuantityFilled), it.PositionSide));
+                }
+                else if (i != 0 && it.PositionSide == PositionSide.Short && it.Side == OrderSide.Buy)
+                {
+                    ConnectHistoryOrder.Insert(new HistoryOrder(it.CreateTime, it.Symbol, Convert.ToDouble(orders[i - 1].AvgPrice), Convert.ToDouble(it.AvgPrice), Convert.ToDouble(orders[i - 1].QuoteQuantityFilled), Convert.ToDouble(it.QuoteQuantityFilled), it.PositionSide));
+                }
+                i++;
+            }
+        }
+
+        //private void AsyncOrder()
+        //{
+        //    var listenKey = socket.futures.Account.StartUserStreamAsync().Result;
+        //    if (!listenKey.Success) ErrorText.Add($"Failed to start user stream: {listenKey.Error.Message}");
+        //    var result = socket.futuresSocket.SubscribeToUserDataUpdatesAsync(listenKey: listenKey.Data,
+        //        onLeverageUpdate => { },
+        //        onMarginUpdate => { },
+        //        onAccountUpdate => { },
+        //        onOrderUpdate => {
+        //            Dispatcher.Invoke(new Action(() =>
+        //            {
+                        
+        //            }));
+        //        },
+        //        onListenKeyExpired => { }
+        //        ).Result;
+        //    if (!result.Success) ErrorText.Add($"Failed AsyncOrder: {result.Error.Message}");
+        //}
 
         #region - Coordinate Orders -
         List<double> long_open_order_x = new List<double>();

@@ -123,6 +123,7 @@
     <Compile Include="ConnectDB\ConnectHistoryOrder.cs" />
     <Compile Include="ConnectDB\ConnectOHLC_NEW.cs" />
     <Compile Include="ConnectDB\ConnectOrder.cs" />
+    <Compile Include="Model\ModelHistoryOrder.cs" />
     <Compile Include="Objects\OHLC_NEW.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -146,7 +147,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\ModelBinanceFuturesOrder.cs" />
-    <Compile Include="Model\ModelHistoryOrder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -69,7 +69,7 @@
         </Style>
     </Window.Resources>
     <Grid>
-        <TabControl>
+        <TabControl x:Name="TAB_CONTROL">
             <TabItem Header="Chart">
                 <Grid Style="{DynamicResource styleGridMain}">
                     <Grid.ColumnDefinitions>
@@ -256,18 +256,47 @@
                     </Grid>
                 </Grid>
             </TabItem>
-            <TabItem Header="History" Name="TabHistory">
+            <TabItem Header="Trade History" x:Name="TabHistory">
                 <Grid>
-                    <ListView Grid.Column="1" Grid.Row="0" Foreground="White" Background="Black" x:Name="HistoryListOrders">
+                    <ListView Grid.Column="1" Grid.Row="0" Foreground="White" Background="Black" x:Name="HISTORY_ORDER">
                         <ListView.View >
                             <GridView>
-                                <GridViewColumn DisplayMemberBinding="{Binding Symbol}" Width="100" Header="Symbol"/>
-                                <GridViewColumn DisplayMemberBinding="{Binding Long}" Width="100" Header="Long"/>
-                                <GridViewColumn DisplayMemberBinding="{Binding long_positive}" Width="100" Header="long-positive"/>
-                                <GridViewColumn DisplayMemberBinding="{Binding price_long}" Width="100" Header="price-long%"/>
-                                <GridViewColumn DisplayMemberBinding="{Binding Short}" Width="100" Header="Short"/>
-                                <GridViewColumn DisplayMemberBinding="{Binding short_positive}" Width="100" Header="short-positive"/>
-                                <GridViewColumn DisplayMemberBinding="{Binding price_short}" Width="100" Header="price-short%"/>
+                                <GridViewColumn DisplayMemberBinding="{Binding Id}" Width="40" Header="Id"/>
+                                <GridViewColumn DisplayMemberBinding="{Binding date}" Width="140" Header="date"/>
+                                <GridViewColumn DisplayMemberBinding="{Binding symbol}" Width="100" Header="symbol"/>
+                                <GridViewColumn DisplayMemberBinding="{Binding open_price}" Width="100" Header="open price"/>
+                                <GridViewColumn DisplayMemberBinding="{Binding close_price}" Width="100" Header="close price"/>
+                                <GridViewColumn DisplayMemberBinding="{Binding qty_open}" Width="100" Header="qty open"/>
+                                <GridViewColumn DisplayMemberBinding="{Binding qty_close}" Width="100" Header="qty close"/>
+                                <GridViewColumn Width="100" Header="side">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Path=side}" Foreground="{Binding Path=side_color}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Width="100" Header="profit">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Path=profit}" Foreground="{Binding Path=profit_color}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Width="100" Header="profit (%)">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Path=profit_percent}" Foreground="{Binding Path=profit_percent_color}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn DisplayMemberBinding="{Binding commission}" Width="140" Header="commission"/>
+                                <GridViewColumn Width="100" Header="total">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Path=total}" Foreground="{Binding Path=total_color}" />
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
                             </GridView>
                         </ListView.View>
                     </ListView>
