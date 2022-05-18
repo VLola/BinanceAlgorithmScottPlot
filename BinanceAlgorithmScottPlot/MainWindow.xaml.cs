@@ -63,7 +63,6 @@ namespace BinanceAlgorithmScottPlot
             COUNT_CANDLES.TextChanged += COUNT_CANDLES_TextChanged;
             TAB_CONTROL.MouseLeftButtonUp += TAB_CONTROL_MouseLeftButtonUp;
 
-
             //Create Table BinanceFuturesOrders
             using (ModelBinanceFuturesOrder context = new ModelBinanceFuturesOrder())
             {
@@ -73,33 +72,6 @@ namespace BinanceAlgorithmScottPlot
             using (ModelHistoryOrder context = new ModelHistoryOrder())
             {
                 context.HistoryOrders.Create();
-            }
-        }
-
-        private void TAB_CONTROL_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            History();
-            foreach (var it in ConnectHistoryOrder.Get()) history_order.Insert(0, it);
-            HISTORY_ORDER.Items.Refresh();
-        }
-
-        private void History()
-        {
-            history_order.Clear();
-            ConnectHistoryOrder.DeleteAll();
-            List<BinanceFuturesOrder> orders = ConnectOrder.Get();
-            int i = 0;
-            foreach(var it in ConnectOrder.Get())
-            {
-                if(i != 0 && it.PositionSide == PositionSide.Long && it.Side == OrderSide.Sell)
-                {
-                    ConnectHistoryOrder.Insert(new HistoryOrder(it.CreateTime, it.Symbol, Convert.ToDouble(orders[i-1].AvgPrice), Convert.ToDouble(it.AvgPrice), Convert.ToDouble(orders[i-1].QuoteQuantityFilled), Convert.ToDouble(it.QuoteQuantityFilled), it.PositionSide));
-                }
-                else if (i != 0 && it.PositionSide == PositionSide.Short && it.Side == OrderSide.Buy)
-                {
-                    ConnectHistoryOrder.Insert(new HistoryOrder(it.CreateTime, it.Symbol, Convert.ToDouble(orders[i - 1].AvgPrice), Convert.ToDouble(it.AvgPrice), Convert.ToDouble(orders[i - 1].QuoteQuantityFilled), Convert.ToDouble(it.QuoteQuantityFilled), it.PositionSide));
-                }
-                i++;
             }
         }
 
@@ -114,13 +86,52 @@ namespace BinanceAlgorithmScottPlot
         //        onOrderUpdate => {
         //            Dispatcher.Invoke(new Action(() =>
         //            {
-                        
+
         //            }));
         //        },
         //        onListenKeyExpired => { }
         //        ).Result;
         //    if (!result.Success) ErrorText.Add($"Failed AsyncOrder: {result.Error.Message}");
         //}
+
+        #region - Trede History -
+        private void TAB_CONTROL_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            History();
+            double sum_total = 0;
+            int count_orders = 0;
+            foreach (var it in ConnectHistoryOrder.Get()) { 
+                history_order.Insert(0, it);
+                sum_total += it.total;
+                count_orders++;
+            }
+            COUNT_ORDERS.Content = count_orders;
+            SUM_TOTAL.Content = sum_total;
+            if (sum_total > 0) SUM_TOTAL.Foreground = System.Windows.Media.Brushes.Green;
+            else if (sum_total < 0) SUM_TOTAL.Foreground = System.Windows.Media.Brushes.Red;
+            HISTORY_ORDER.Items.Refresh();
+        }
+
+        private void History()
+        {
+            history_order.Clear();
+            ConnectHistoryOrder.DeleteAll();
+            List<BinanceFuturesOrder> orders = ConnectOrder.Get();
+            int i = 0;
+            foreach(var it in ConnectOrder.Get())
+            {
+                if(it.PositionSide == PositionSide.Long && it.Side == OrderSide.Sell)
+                {
+                    ConnectHistoryOrder.Insert(new HistoryOrder(it.CreateTime, it.Symbol, Convert.ToDouble(orders[i-1].AvgPrice), Convert.ToDouble(it.AvgPrice), Convert.ToDouble(orders[i-1].QuoteQuantityFilled), Convert.ToDouble(it.QuoteQuantityFilled), it.PositionSide));
+                }
+                else if (it.PositionSide == PositionSide.Short && it.Side == OrderSide.Buy)
+                {
+                    ConnectHistoryOrder.Insert(new HistoryOrder(it.CreateTime, it.Symbol, Convert.ToDouble(orders[i - 1].AvgPrice), Convert.ToDouble(it.AvgPrice), Convert.ToDouble(orders[i - 1].QuoteQuantityFilled), Convert.ToDouble(it.QuoteQuantityFilled), it.PositionSide));
+                }
+                i++;
+            }
+        }
+        #endregion
 
         #region - Coordinate Orders -
         List<double> long_open_order_x = new List<double>();
@@ -141,33 +152,39 @@ namespace BinanceAlgorithmScottPlot
             short_open_order_y.Clear();
             short_close_order_x.Clear();
             short_close_order_y.Clear();
-
+            bool check_one = false;
             string symbol = LIST_SYMBOLS.Text;
             if (symbol != "")
             {
                 ConnectOrder.DeleteAll();
                 foreach (var it in Algorithm.AlgorithmBet.InfoOrder(socket, symbol, start_time))
                 {
-                    ConnectOrder.Insert(it);
+
                     if (it.PositionSide == PositionSide.Long && it.Side == OrderSide.Buy)
                     {
                         long_open_order_x.Add(it.CreateTime.ToOADate());
                         long_open_order_y.Add(Double.Parse(it.AvgPrice.ToString()));
+                        check_one = true;
+                        ConnectOrder.Insert(it);
                     }
-                    else if (it.PositionSide == PositionSide.Long && it.Side == OrderSide.Sell)
+                    else if (it.PositionSide == PositionSide.Long && it.Side == OrderSide.Sell && check_one)
                     {
                         long_close_order_x.Add(it.CreateTime.ToOADate());
                         long_close_order_y.Add(Double.Parse(it.AvgPrice.ToString()));
+                        ConnectOrder.Insert(it);
                     }
                     else if (it.PositionSide == PositionSide.Short && it.Side == OrderSide.Sell)
                     {
                         short_open_order_x.Add(it.CreateTime.ToOADate());
                         short_open_order_y.Add(Double.Parse(it.AvgPrice.ToString()));
+                        check_one = true;
+                        ConnectOrder.Insert(it);
                     }
-                    else if (it.PositionSide == PositionSide.Short && it.Side == OrderSide.Buy)
+                    else if (it.PositionSide == PositionSide.Short && it.Side == OrderSide.Buy && check_one)
                     {
                         short_close_order_x.Add(it.CreateTime.ToOADate());
                         short_close_order_y.Add(Double.Parse(it.AvgPrice.ToString()));
+                        ConnectOrder.Insert(it);
                     }
                 }
             }
@@ -340,6 +357,7 @@ namespace BinanceAlgorithmScottPlot
 
                     StartAlgorithm();
                     plt.Refresh();
+                    //plt.Render();
                 }
             }
         }
@@ -349,7 +367,7 @@ namespace BinanceAlgorithmScottPlot
         #region - Algorithm -
         public long order_id = 0;
         decimal quantity;
-        public bool start;
+        public bool start = false;
         public bool position;
         public bool temp_position;
         public bool start_programm = true;
@@ -491,6 +509,7 @@ namespace BinanceAlgorithmScottPlot
         }
         #endregion
 
+
         private void StartAlgorithm()
         {
             try
@@ -546,9 +565,9 @@ namespace BinanceAlgorithmScottPlot
                         {
                             quantity = Math.Round(usdt / price, 1);
 
-                            order_id = Algorithm.AlgorithmBet.OpenOrder(socket, symbol, quantity, list_candle_ohlc[list_candle_ohlc.Count - 1].Close, sma_long.ys[sma_long.ys.Length - 1]);
+                            order_id = Algorithm.AlgorithmOne.OpenOrder(socket, symbol, quantity, list_candle_ohlc[list_candle_ohlc.Count - 1].Close, sma_long.ys);
 
-                            if (order_id != 0) start = false;
+                            start = false;
                         }
                     }
 
@@ -559,6 +578,76 @@ namespace BinanceAlgorithmScottPlot
                 ErrorText.Add($"StartAlgorithm {c.Message}");
             }
         }
+
+        //private void StartAlgorithm()
+        //{
+        //    try
+        //    {
+        //        if (START_BET.IsChecked == true && ONLINE_CHART.IsChecked == true && order_id == 0)
+        //        {
+        //            Position();
+
+        //            if (start_programm)
+        //            {
+        //                TempPosition();
+        //                start_programm = false;
+        //            }
+
+        //            if (position == true && temp_position == false) start = true;
+        //            else if (position == false && temp_position == true) start = true;
+
+        //            TempPosition();
+        //        }
+        //        string symbol = LIST_SYMBOLS.Text;
+
+
+        //        if (START_BET.IsChecked == true && ONLINE_CHART.IsChecked == true && order_id != 0)
+        //        {
+        //            bool sl = false;
+        //            bool tp = false;
+        //            PositionSide position_side = Algorithm.AlgorithmBet.InfoOrderPositionSide(socket, symbol, order_id);
+        //            if (position_side == PositionSide.Long)
+        //            {
+        //                tp = PriceBolingerLongTP();
+        //                sl = PriceBolingerLongSL();
+        //            }
+        //            else if (position_side == PositionSide.Short)
+        //            {
+        //                tp = PriceBolingerShortTP();
+        //                sl = PriceBolingerShortSL();
+        //            }
+        //            if (tp || sl)
+        //            {
+        //                order_id = Algorithm.AlgorithmBet.CloseOrder(socket, symbol, order_id, quantity);
+        //                if (order_id == 0) start_programm = true;
+        //            }
+        //        }
+        //        if (START_BET.IsChecked == true && ONLINE_CHART.IsChecked == true && start && order_id == 0)
+        //        {
+        //            string usdt_bet = USDT_BET.Text;
+        //            string price_symbol = PRICE_SYMBOL.Text;
+        //            if (usdt_bet != "" && price_symbol != "")
+        //            {
+        //                decimal usdt = Decimal.Parse(usdt_bet);
+        //                decimal price = Decimal.Parse(price_symbol);
+        //                if (usdt > 0m && price > 0m)
+        //                {
+        //                    quantity = Math.Round(usdt / price, 1);
+
+        //                    order_id = Algorithm.AlgorithmBet.OpenOrder(socket, symbol, quantity, list_candle_ohlc[list_candle_ohlc.Count - 1].Close, sma_long.ys[sma_long.ys.Length - 1]);
+        //                    //order_id = Algorithm.AlgorithmOne.OpenOrder(socket, symbol, quantity, list_candle_ohlc[list_candle_ohlc.Count - 1].Close, sma_long.ys);
+
+        //                    if (order_id != 0) start = false;
+        //                }
+        //            }
+
+        //        }
+        //    }
+        //    catch (Exception c)
+        //    {
+        //        ErrorText.Add($"StartAlgorithm {c.Message}");
+        //    }
+        //}
         #endregion
 
         #region - Load Candles -
