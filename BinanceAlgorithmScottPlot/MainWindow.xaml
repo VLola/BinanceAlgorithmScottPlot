@@ -166,36 +166,24 @@
                                     <Button Content="Exit" Click="Exit_Click" Style="{DynamicResource styleButton}"/>
                                 </DockPanel>
                                 <DockPanel Grid.Column="0" Grid.Row="1" Style="{DynamicResource styleDockPanel}">
-                                    <CheckBox Content="Online" IsChecked="{Binding Path=ONLINE_CHART}" Style="{DynamicResource styleCheckBox}"/>
+                                    <CheckBox Content="Online" Click="ONLINE_CHART_Click" Style="{DynamicResource styleCheckBox}"/>
                                 </DockPanel>
-                                <Grid  Grid.Column="1" Grid.Row="1"  Style="{DynamicResource styleGridBlack}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="10*"/>
-                                        <ColumnDefinition Width="5*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Label Grid.Column="0" Content="Count candles:" Style="{DynamicResource styleLabel}"/>
-                                    <TextBox x:Name="COUNT_CANDLES" Text="100" Grid.Column="1" Style="{DynamicResource styleTextBox}"/>
-                                </Grid>
+                                <DockPanel Grid.Column="1" Grid.Row="1" Style="{DynamicResource styleDockPanel}">
+                                    <Label Content="Count candles:" Style="{DynamicResource styleLabel}"/>
+                                    <TextBox Text="{Binding Path=COUNT_CANDLES, UpdateSourceTrigger=PropertyChanged}" TextChanged="COUNT_CANDLES_TextChanged" Style="{DynamicResource styleTextBox}"/>
+                                </DockPanel>
                                 <DockPanel Grid.Column="2" Grid.Row="1" Style="{DynamicResource styleDockPanel}">
                                     <Label Content="SMA long:" Style="{DynamicResource styleLabel}"/>
                                     <TextBox Text="{Binding SMA_LONG, UpdateSourceTrigger=PropertyChanged}" TextChanged="SMA_LONG_TextChanged" Style="{DynamicResource styleTextBox}"/>
                                 </DockPanel>
-                                <Grid Grid.Column="3" Grid.Row="1" Style="{DynamicResource styleGridBlack}">
+                                <DockPanel Grid.Column="3" Grid.Row="1" Style="{DynamicResource styleDockPanel}">
                                     <Button Content="Short Bet" Click="ShortBet_Click" Style="{DynamicResource styleButton}"/>
-                                </Grid>
-                                <Grid Visibility="Hidden" Grid.Column="3" Grid.Row="1"  Style="{DynamicResource styleGridBlack}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="10*"/>
-                                        <ColumnDefinition Width="5*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Label Grid.Column="0" Content="SMA short:" Style="{DynamicResource styleLabel}"/>
-                                    <TextBox x:Name="SMA_SHORT" Text="2" Grid.Column="1" Style="{DynamicResource styleTextBox}"/>
-                                </Grid>
-                                <Grid Grid.Column="4" Grid.Row="1" Style="{DynamicResource styleGridBlack}">
-                                    <Button Visibility="Visible" x:Name="STOP_ASYNC" Content="Disconnect" Click="STOP_ASYNC_Click" Style="{DynamicResource styleButton}"/>
-                                </Grid>
+                                </DockPanel>
+                                <DockPanel Grid.Column="4" Grid.Row="1" Style="{DynamicResource styleDockPanel}">
+                                    <Button Content="Disconnect" Click="STOP_ASYNC_Click" Style="{DynamicResource styleButton}"/>
+                                </DockPanel>
                                 <DockPanel Grid.Column="0" Grid.Row="2" Style="{DynamicResource styleDockPanel}">
-                                    <CheckBox Content="Start bet" IsChecked="{Binding Path=START_BET}" Style="{DynamicResource styleCheckBox}"/>
+                                    <CheckBox Content="Start bet" Click="START_BET_Click" Style="{DynamicResource styleCheckBox}"/>
                                 </DockPanel>
                                 <DockPanel Grid.Column="1" Grid.Row="2" Style="{DynamicResource styleDockPanel}">
                                     <Label Content="USDT:" Style="{DynamicResource styleLabel}"/>
@@ -212,25 +200,22 @@
                                     </DockPanel>
                                 </StackPanel>
 
-                                <Grid Grid.Column="3" Grid.Row="2" Style="{DynamicResource styleGridBlack}">
+                                <DockPanel Grid.Column="3" Grid.Row="2" Style="{DynamicResource styleDockPanel}">
                                     <Button Content="Close Order" Click="CloseOrder_Click" Style="{DynamicResource styleButton}"/>
-                                </Grid>
+                                </DockPanel>
 
-                                <Grid Grid.Column="4" Grid.Row="2" Style="{DynamicResource styleGridBlack}">
-
-                                </Grid>
+                                <DockPanel Grid.Column="4" Grid.Row="2" Style="{DynamicResource styleDockPanel}">
+                                    
+                                </DockPanel>
+                                
 
                             </Grid>
                         </Grid>
                     </Grid>
-                    <Grid Grid.Column="1" Grid.Row="0" Style="{DynamicResource styleGrid}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="20*"/>
-                            <ColumnDefinition Width="100*"/>
-                        </Grid.ColumnDefinitions>
-                        <Button Content="Clear" Click="Button_ClearErrors" Grid.Column="0" Style="{DynamicResource styleButtonLeftBottom}"/>
-                        <TextBox x:Name="ERROR_LOG" Grid.Column="1" Style="{DynamicResource styleTextBoxErrors}"/>
-                    </Grid>
+                    <DockPanel Grid.Column="1" Grid.Row="0" Style="{DynamicResource styleDockPanel}">
+                        <Button Content="Clear" Click="Button_ClearErrors" Style="{DynamicResource styleButtonLeftBottom}"/>
+                        <TextBox x:Name="ERROR_LOG" Style="{DynamicResource styleTextBoxErrors}"/>
+                    </DockPanel>
                     <Grid Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Style="{DynamicResource styleGrid}">
                         <WpfPlot Name="plt"/>
                     </Grid>

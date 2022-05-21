@@ -24,15 +24,15 @@ namespace BinanceAlgorithmScottPlot
 {
     public partial class MainWindow : Window
     {
-        public int SMA_LONG { get; set; } = 0;
-        public decimal USDT_BET { get; set; } = 0;
+        public int COUNT_CANDLES { get; set; } = 100;
+        public int SMA_LONG { get; set; } = 20;
+        public decimal USDT_BET { get; set; } = 10;
         bool ONLINE_CHART { get; set; } = false;
         bool START_BET { get; set; } = false;
-        public double BOLINGER_TP { get; set; } = 0;
-        public double BOLINGER_SL { get; set; } = 0;
+        public double BOLINGER_TP { get; set; } = 100;
+        public double BOLINGER_SL { get; set; } = 100;
         public decimal PRICE_SYMBOL { get; set; }
         public Socket socket;
-        public List<string> interval = new List<string>();
         public List<string> list_sumbols_name = new List<string>();
         public FinancePlot candlePlot;
         public ScatterPlot sma_long_plot;
@@ -46,7 +46,6 @@ namespace BinanceAlgorithmScottPlot
         public List<ScatterPlot> order_long_lines_horisontal = new List<ScatterPlot>();
         public List<ScatterPlot> order_short_lines_vertical = new List<ScatterPlot>();
         public List<ScatterPlot> order_short_lines_horisontal = new List<ScatterPlot>();
-        public List<BinanceFuturesUsdtTrade> history;
         public KlineInterval interval_time = KlineInterval.OneMinute;
         public TimeSpan timeSpan = new TimeSpan(TimeSpan.TicksPerMinute);
         public List<HistoryOrder> history_order = new List<HistoryOrder>();
@@ -63,7 +62,6 @@ namespace BinanceAlgorithmScottPlot
             LIST_SYMBOLS.ItemsSource = list_sumbols_name;
             EXIT_GRID.Visibility = Visibility.Hidden;
             LOGIN_GRID.Visibility = Visibility.Visible;
-            COUNT_CANDLES.TextChanged += COUNT_CANDLES_TextChanged;
             TAB_CONTROL.MouseLeftButtonUp += TAB_CONTROL_MouseLeftButtonUp;
             this.DataContext = this;
 
@@ -78,6 +76,18 @@ namespace BinanceAlgorithmScottPlot
                 context.HistoryOrders.Create();
             }
         }
+
+        private void ONLINE_CHART_Click(object sender, RoutedEventArgs e)
+        {
+            CheckBox box = e.Source as CheckBox;
+            ONLINE_CHART = (bool)box.IsChecked;
+        }
+        private void START_BET_Click(object sender, RoutedEventArgs e)
+        {
+            CheckBox box = e.Source as CheckBox;
+            START_BET = (bool)box.IsChecked;
+        }
+
         public decimal quantity_bet;
         public long bet_order_id = 0;
         private void LongBet_Click(object sender, RoutedEventArgs e)
@@ -210,18 +220,7 @@ namespace BinanceAlgorithmScottPlot
         #region - Event Text Changed -
         private void COUNT_CANDLES_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string count_candles = COUNT_CANDLES.Text;
-            if (SMA_LONG > 0 && count_candles != "")
-            {
-                if (Convert.ToInt32(count_candles) > SMA_LONG && Convert.ToInt32(count_candles) < 500)
-                {
-                    StopAsync();
-                    ConnectOHLC_NEW.DeleteAll();
-                    LoadCandles();
-                    if (ONLINE_CHART) StartKlineAsync();
-                    startLoadChart();
-                }
-            }
+            ReloadChart();
         }
 
         private void INTERVAL_TIME_DropDownClosed(object sender, EventArgs e)
@@ -229,11 +228,7 @@ namespace BinanceAlgorithmScottPlot
             int index = INTERVAL_TIME.SelectedIndex;
             interval_time = IntervalCandles.Intervals()[index].interval;
             timeSpan = new TimeSpan(IntervalCandles.Intervals()[index].timespan);
-            StopAsync();
-            ConnectOHLC_NEW.DeleteAll();
-            LoadCandles();
-            if (ONLINE_CHART) StartKlineAsync();
-            startLoadChart();
+            ReloadChart();
         }
         #endregion
 
@@ -241,28 +236,19 @@ namespace BinanceAlgorithmScottPlot
 
         private void SMA_LONG_TextChanged(object sender, TextChangedEventArgs e)
         {
-            //TextBox box = e.Source as TextBox;
-            //if(box.Text != "")
-            //{
-            //    SMA_LONG = Int32.Parse(box.Text);
-            //    LoadChart();
-            //}
-            LoadChart();
+            ReloadSmaChart();
         }
         #endregion
 
         #region - Load Chart -
 
+
         public List<OHLC> list_candle_ohlc = new List<OHLC>();
         private void LIST_SYMBOLS_DropDownClosed(object sender, EventArgs e)
         {
-            StopAsync();
-            ConnectOHLC_NEW.DeleteAll();
-            LoadCandles();
-            if (ONLINE_CHART) StartKlineAsync();
-            startLoadChart();
+            ReloadChart();
         }
-        private void startLoadChart()
+        private void LoadingCandlesToChart()
         {
             try
             {
@@ -277,24 +263,50 @@ namespace BinanceAlgorithmScottPlot
                         list_candle_ohlc.Add(new OHLC(Decimal.ToDouble(it.Open), Decimal.ToDouble(it.High), Decimal.ToDouble(it.Low), Decimal.ToDouble(it.Close), it.DateTime, timeSpan));
                     }
                     InfoOrderAsunc(list_candle_ohlc[0].DateTime);
-                    LoadChart();
+                    LoadingChart();
                 }
             }
             catch (Exception c)
             {
-                ErrorText.Add($"ComboBox_SelectionChanged {c.Message}");
+                ErrorText.Add($"LoadingCandlesToChart {c.Message}");
             }
         }
 
-        public (double[] xs, double[] ys, double[] lower, double[] upper) sma_long;
-        private void LoadChart()
+        private void ReloadChart()
         {
-            string count_candles = COUNT_CANDLES.Text;
-            if (count_candles != "")
+            if (socket != null && SMA_LONG > 1 && COUNT_CANDLES > 0 && COUNT_CANDLES > SMA_LONG && COUNT_CANDLES < 500)
+            {
+                StopAsync();
+                ConnectOHLC_NEW.DeleteAll();
+                LoadingCandlesToDB();
+                if (ONLINE_CHART) StartKlineAsync();
+                LoadingCandlesToChart();
+            }
+        }
+        private void ReloadSmaChart()
+        {
+            if (socket != null && SMA_LONG > 1 && COUNT_CANDLES > 0 && COUNT_CANDLES > SMA_LONG && COUNT_CANDLES < 500 && SMA_LONG < list_candle_ohlc.Count - 1)
+            {
+                plt.Plot.Remove(sma_long_plot);
+                plt.Plot.Remove(bolinger2);
+                plt.Plot.Remove(bolinger3);
+                sma_long = candlePlot.GetBollingerBands(SMA_LONG);
+                sma_long_plot = plt.Plot.AddScatterLines(sma_long.xs, sma_long.ys, Color.Cyan, 2, label: SMA_LONG + " minute SMA");
+                sma_long_plot.YAxisIndex = 1;
+                bolinger2 = plt.Plot.AddScatterLines(sma_long.xs, sma_long.lower, Color.Blue, lineStyle: LineStyle.Dash);
+                bolinger2.YAxisIndex = 1;
+                bolinger3 = plt.Plot.AddScatterLines(sma_long.xs, sma_long.upper, Color.Blue, lineStyle: LineStyle.Dash);
+                bolinger3.YAxisIndex = 1;
+                plt.Refresh();
+            }
+        }
+        public (double[] xs, double[] ys, double[] lower, double[] upper) sma_long;
+        private void LoadingChart()
+        {
+            if (COUNT_CANDLES > 0)
             {
                 if (SMA_LONG > 1 && SMA_LONG < list_candle_ohlc.Count - 1)
                 {
-                    ErrorText.Add(PRICE_SYMBOL.ToString());
                     plt.Plot.Remove(candlePlot);
                     plt.Plot.Remove(sma_long_plot);
                     plt.Plot.Remove(order_long_open_plot);
@@ -375,9 +387,9 @@ namespace BinanceAlgorithmScottPlot
 
 
 
-                    StartAlgorithm();
+                    //StartAlgorithm();
                     plt.Refresh();
-                    //plt.Render();
+                    
                 }
             }
         }
@@ -639,21 +651,19 @@ namespace BinanceAlgorithmScottPlot
         #endregion
 
         #region - Load Candles -
-        private void LoadCandles()
+        private void LoadingCandlesToDB()
         {
             try
             {
                 string symbol = LIST_SYMBOLS.Text;
-                int count = Convert.ToInt32(COUNT_CANDLES.Text);
-                if (count > 0 && count < 500 && symbol != "")
+                if (symbol != "")
                 {
-                    Klines(symbol, klines_count: count);
+                    Klines(symbol, klines_count: COUNT_CANDLES);
                 }
-                else MessageBox.Show("Button_Refile: Не верные условия!");
             }
             catch (Exception c)
             {
-                ErrorText.Add($"LoadCandles {c.Message}");
+                ErrorText.Add($"LoadingCandlesToDB {c.Message}");
             }
         }
 
@@ -746,7 +756,7 @@ namespace BinanceAlgorithmScottPlot
                     ohlc_item.Low = Message.Data.Data.LowPrice;
                     ohlc_item.Close = Message.Data.Data.ClosePrice;
                     Id = Convert.ToInt32(ConnectOHLC_NEW.Insert(ohlc_item));
-                    startLoadChart();
+                    LoadingCandlesToChart();
                 }));
             });
 
