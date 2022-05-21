@@ -22,13 +22,16 @@ using BinanceAlgorithmScottPlot.Objects;
 
 namespace BinanceAlgorithmScottPlot
 {
-    /// <summary>
-    /// Логика взаимодействия для MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
+        public int SMA_LONG { get; set; } = 0;
+        public decimal USDT_BET { get; set; } = 0;
+        bool ONLINE_CHART { get; set; } = false;
+        bool START_BET { get; set; } = false;
+        public double BOLINGER_TP { get; set; } = 0;
+        public double BOLINGER_SL { get; set; } = 0;
+        public decimal PRICE_SYMBOL { get; set; }
         public Socket socket;
-        public IntervalCandles IntervalCandles = new IntervalCandles();
         public List<string> interval = new List<string>();
         public List<string> list_sumbols_name = new List<string>();
         public FinancePlot candlePlot;
@@ -47,6 +50,7 @@ namespace BinanceAlgorithmScottPlot
         public KlineInterval interval_time = KlineInterval.OneMinute;
         public TimeSpan timeSpan = new TimeSpan(TimeSpan.TicksPerMinute);
         public List<HistoryOrder> history_order = new List<HistoryOrder>();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -54,14 +58,14 @@ namespace BinanceAlgorithmScottPlot
             Chart();
             Clients();
             HISTORY_ORDER.ItemsSource = history_order;
-            INTERVAL_TIME.ItemsSource = IntervalCandles.Intervals;
+            INTERVAL_TIME.ItemsSource = IntervalCandles.Intervals();
             INTERVAL_TIME.SelectedIndex = 0;
             LIST_SYMBOLS.ItemsSource = list_sumbols_name;
             EXIT_GRID.Visibility = Visibility.Hidden;
             LOGIN_GRID.Visibility = Visibility.Visible;
-            SMA_LONG.TextChanged += SMA_LONG_TextChanged;
             COUNT_CANDLES.TextChanged += COUNT_CANDLES_TextChanged;
             TAB_CONTROL.MouseLeftButtonUp += TAB_CONTROL_MouseLeftButtonUp;
+            this.DataContext = this;
 
             //Create Table BinanceFuturesOrders
             using (ModelBinanceFuturesOrder context = new ModelBinanceFuturesOrder())
@@ -74,25 +78,37 @@ namespace BinanceAlgorithmScottPlot
                 context.HistoryOrders.Create();
             }
         }
-
-        //private void AsyncOrder()
-        //{
-        //    var listenKey = socket.futures.Account.StartUserStreamAsync().Result;
-        //    if (!listenKey.Success) ErrorText.Add($"Failed to start user stream: {listenKey.Error.Message}");
-        //    var result = socket.futuresSocket.SubscribeToUserDataUpdatesAsync(listenKey: listenKey.Data,
-        //        onLeverageUpdate => { },
-        //        onMarginUpdate => { },
-        //        onAccountUpdate => { },
-        //        onOrderUpdate => {
-        //            Dispatcher.Invoke(new Action(() =>
-        //            {
-
-        //            }));
-        //        },
-        //        onListenKeyExpired => { }
-        //        ).Result;
-        //    if (!result.Success) ErrorText.Add($"Failed AsyncOrder: {result.Error.Message}");
-        //}
+        public decimal quantity_bet;
+        public long bet_order_id = 0;
+        private void LongBet_Click(object sender, RoutedEventArgs e)
+        {
+            string symbol = LIST_SYMBOLS.Text;
+            if (bet_order_id == 0)
+            {
+                if (USDT_BET > 0m && PRICE_SYMBOL > 0m)
+                {
+                    quantity_bet = Math.Round(USDT_BET / PRICE_SYMBOL, 1);
+                    bet_order_id = Algorithm.Algorithm.OpenOrder(socket, symbol, quantity_bet, PositionSide.Long);
+                }
+            }
+        }
+        private void ShortBet_Click(object sender, RoutedEventArgs e)
+        {
+            string symbol = LIST_SYMBOLS.Text;
+            if (bet_order_id == 0)
+            {
+                if (USDT_BET > 0m && PRICE_SYMBOL > 0m)
+                {
+                    quantity_bet = Math.Round(USDT_BET / PRICE_SYMBOL, 1);
+                    bet_order_id = Algorithm.Algorithm.OpenOrder(socket, symbol, quantity_bet, PositionSide.Short);
+                }
+            }
+        }
+        private void CloseOrder_Click(object sender, RoutedEventArgs e)
+        {
+            string symbol = LIST_SYMBOLS.Text;
+            if (bet_order_id != 0) bet_order_id = Algorithm.Algorithm.CloseOrder(socket, symbol, bet_order_id, quantity_bet);
+        }
 
         #region - Trede History -
         private void TAB_CONTROL_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -194,16 +210,15 @@ namespace BinanceAlgorithmScottPlot
         #region - Event Text Changed -
         private void COUNT_CANDLES_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string text_long = SMA_LONG.Text;
             string count_candles = COUNT_CANDLES.Text;
-            if (text_long != "" && count_candles != "")
+            if (SMA_LONG > 0 && count_candles != "")
             {
-                if (Convert.ToInt32(count_candles) > Convert.ToInt32(text_long) && Convert.ToInt32(count_candles) < 500)
+                if (Convert.ToInt32(count_candles) > SMA_LONG && Convert.ToInt32(count_candles) < 500)
                 {
                     StopAsync();
                     ConnectOHLC_NEW.DeleteAll();
                     LoadCandles();
-                    if (ONLINE_CHART.IsChecked == true) StartKlineAsync();
+                    if (ONLINE_CHART) StartKlineAsync();
                     startLoadChart();
                 }
             }
@@ -212,12 +227,12 @@ namespace BinanceAlgorithmScottPlot
         private void INTERVAL_TIME_DropDownClosed(object sender, EventArgs e)
         {
             int index = INTERVAL_TIME.SelectedIndex;
-            interval_time = IntervalCandles.Intervals[index].interval;
-            timeSpan = new TimeSpan(IntervalCandles.Intervals[index].timespan);
+            interval_time = IntervalCandles.Intervals()[index].interval;
+            timeSpan = new TimeSpan(IntervalCandles.Intervals()[index].timespan);
             StopAsync();
             ConnectOHLC_NEW.DeleteAll();
             LoadCandles();
-            if (ONLINE_CHART.IsChecked == true) StartKlineAsync();
+            if (ONLINE_CHART) StartKlineAsync();
             startLoadChart();
         }
         #endregion
@@ -226,6 +241,12 @@ namespace BinanceAlgorithmScottPlot
 
         private void SMA_LONG_TextChanged(object sender, TextChangedEventArgs e)
         {
+            //TextBox box = e.Source as TextBox;
+            //if(box.Text != "")
+            //{
+            //    SMA_LONG = Int32.Parse(box.Text);
+            //    LoadChart();
+            //}
             LoadChart();
         }
         #endregion
@@ -238,7 +259,7 @@ namespace BinanceAlgorithmScottPlot
             StopAsync();
             ConnectOHLC_NEW.DeleteAll();
             LoadCandles();
-            if (ONLINE_CHART.IsChecked == true) StartKlineAsync();
+            if (ONLINE_CHART) StartKlineAsync();
             startLoadChart();
         }
         private void startLoadChart()
@@ -268,13 +289,12 @@ namespace BinanceAlgorithmScottPlot
         public (double[] xs, double[] ys, double[] lower, double[] upper) sma_long;
         private void LoadChart()
         {
-            string text_long = SMA_LONG.Text;
             string count_candles = COUNT_CANDLES.Text;
-            if (text_long != "" && count_candles != "")
+            if (count_candles != "")
             {
-                int sma_indi_long = Convert.ToInt32(text_long);
-                if (sma_indi_long > 1 && sma_indi_long < Convert.ToInt32(count_candles))
+                if (SMA_LONG > 1 && SMA_LONG < list_candle_ohlc.Count - 1)
                 {
+                    ErrorText.Add(PRICE_SYMBOL.ToString());
                     plt.Plot.Remove(candlePlot);
                     plt.Plot.Remove(sma_long_plot);
                     plt.Plot.Remove(order_long_open_plot);
@@ -289,8 +309,8 @@ namespace BinanceAlgorithmScottPlot
                     plt.Plot.Remove(bolinger3);
                     candlePlot = plt.Plot.AddCandlesticks(list_candle_ohlc.ToArray());
                     candlePlot.YAxisIndex = 1;
-                    sma_long = candlePlot.GetBollingerBands(sma_indi_long);
-                    sma_long_plot = plt.Plot.AddScatterLines(sma_long.xs, sma_long.ys, Color.Cyan, 2, label: text_long + " minute SMA");
+                    sma_long = candlePlot.GetBollingerBands(SMA_LONG);
+                    sma_long_plot = plt.Plot.AddScatterLines(sma_long.xs, sma_long.ys, Color.Cyan, 2, label: SMA_LONG + " minute SMA");
                     sma_long_plot.YAxisIndex = 1;
                     bolinger2 = plt.Plot.AddScatterLines(sma_long.xs, sma_long.lower, Color.Blue, lineStyle: LineStyle.Dash);
                     bolinger2.YAxisIndex = 1;
@@ -405,22 +425,15 @@ namespace BinanceAlgorithmScottPlot
         {
             try
             {
-                string bolinger_text = BOLINGER_TP.Text;
-                if (bolinger_text != "")
+                if (BOLINGER_TP > 0)
                 {
-                    double bolinger_text_double = Double.Parse(bolinger_text);
-                    if (bolinger_text_double > 0)
-                    {
-                        double price_bolinger = sma_long.upper[sma_long.upper.Length - 1];
-                        double price_sma = sma_long.ys[sma_long.ys.Length - 1];
-                        double price = (price_bolinger - price_sma) / 100 * bolinger_text_double + price_sma;
-                        if (list_candle_ohlc[list_candle_ohlc.Count - 1].Close > price) return true;
-                        else return false;
-                    }
+                    double price_bolinger = sma_long.upper[sma_long.upper.Length - 1];
+                    double price_sma = sma_long.ys[sma_long.ys.Length - 1];
+                    double price = (price_bolinger - price_sma) / 100 * BOLINGER_TP + price_sma;
+                    if (list_candle_ohlc[list_candle_ohlc.Count - 1].Close > price) return true;
                     else return false;
                 }
                 else return false;
-
             }
             catch (Exception c)
             {
@@ -432,18 +445,12 @@ namespace BinanceAlgorithmScottPlot
         {
             try
             {
-                string bolinger_text = BOLINGER_SL.Text;
-                if (bolinger_text != "")
+                if (BOLINGER_SL > 0)
                 {
-                    double bolinger_text_double = Double.Parse(bolinger_text);
-                    if (bolinger_text_double > 0)
-                    {
-                        double price_bolinger = sma_long.lower[sma_long.lower.Length - 1];
-                        double price_sma = sma_long.ys[sma_long.ys.Length - 1];
-                        double price = price_sma - (price_sma - price_bolinger) / 100 * bolinger_text_double;
-                        if (list_candle_ohlc[list_candle_ohlc.Count - 1].Close < price) return true;
-                        else return false;
-                    }
+                    double price_bolinger = sma_long.lower[sma_long.lower.Length - 1];
+                    double price_sma = sma_long.ys[sma_long.ys.Length - 1];
+                    double price = price_sma - (price_sma - price_bolinger) / 100 * BOLINGER_SL;
+                    if (list_candle_ohlc[list_candle_ohlc.Count - 1].Close < price) return true;
                     else return false;
                 }
                 else return false;
@@ -459,18 +466,12 @@ namespace BinanceAlgorithmScottPlot
         {
             try
             {
-                string bolinger_text = BOLINGER_TP.Text;
-                if (bolinger_text != "")
+                if (BOLINGER_TP > 0)
                 {
-                    double bolinger_text_double = Double.Parse(bolinger_text);
-                    if (bolinger_text_double > 0)
-                    {
-                        double price_bolinger = sma_long.lower[sma_long.lower.Length - 1];
-                        double price_sma = sma_long.ys[sma_long.ys.Length - 1];
-                        double price = price_sma - (price_sma - price_bolinger) / 100 * bolinger_text_double;
-                        if (list_candle_ohlc[list_candle_ohlc.Count - 1].Close < price) return true;
-                        else return false;
-                    }
+                    double price_bolinger = sma_long.lower[sma_long.lower.Length - 1];
+                    double price_sma = sma_long.ys[sma_long.ys.Length - 1];
+                    double price = price_sma - (price_sma - price_bolinger) / 100 * BOLINGER_TP;
+                    if (list_candle_ohlc[list_candle_ohlc.Count - 1].Close < price) return true;
                     else return false;
                 }
                 else return false;
@@ -485,18 +486,12 @@ namespace BinanceAlgorithmScottPlot
         {
             try
             {
-                string bolinger_text = BOLINGER_SL.Text;
-                if (bolinger_text != "")
+                if (BOLINGER_SL > 0)
                 {
-                    double bolinger_text_double = Double.Parse(bolinger_text);
-                    if (bolinger_text_double > 0)
-                    {
-                        double price_bolinger = sma_long.upper[sma_long.upper.Length - 1];
-                        double price_sma = sma_long.ys[sma_long.ys.Length - 1];
-                        double price = (price_bolinger - price_sma) / 100 * bolinger_text_double + price_sma;
-                        if (list_candle_ohlc[list_candle_ohlc.Count - 1].Close > price) return true;
-                        else return false;
-                    }
+                    double price_bolinger = sma_long.upper[sma_long.upper.Length - 1];
+                    double price_sma = sma_long.ys[sma_long.ys.Length - 1];
+                    double price = (price_bolinger - price_sma) / 100 * BOLINGER_SL + price_sma;
+                    if (list_candle_ohlc[list_candle_ohlc.Count - 1].Close > price) return true;
                     else return false;
                 }
                 else return false;
@@ -514,7 +509,7 @@ namespace BinanceAlgorithmScottPlot
         {
             try
             {
-                if (START_BET.IsChecked == true && ONLINE_CHART.IsChecked == true && order_id == 0)
+                if (START_BET && ONLINE_CHART && order_id == 0)
                 {
                     Position();
 
@@ -532,7 +527,7 @@ namespace BinanceAlgorithmScottPlot
                 string symbol = LIST_SYMBOLS.Text;
 
 
-                if (START_BET.IsChecked == true && ONLINE_CHART.IsChecked == true && order_id != 0)
+                if (START_BET && ONLINE_CHART && order_id != 0)
                 {
                     bool sl = false;
                     bool tp = false;
@@ -553,22 +548,15 @@ namespace BinanceAlgorithmScottPlot
                         if (order_id == 0) start_programm = true;
                     }
                 }
-                if (START_BET.IsChecked == true && ONLINE_CHART.IsChecked == true && start && order_id == 0)
+                if (START_BET && ONLINE_CHART && start && order_id == 0)
                 {
-                    string usdt_bet = USDT_BET.Text;
-                    string price_symbol = PRICE_SYMBOL.Text;
-                    if (usdt_bet != "" && price_symbol != "")
+                    if (USDT_BET > 0m && PRICE_SYMBOL > 0m)
                     {
-                        decimal usdt = Decimal.Parse(usdt_bet);
-                        decimal price = Decimal.Parse(price_symbol);
-                        if (usdt > 0m && price > 0m)
-                        {
-                            quantity = Math.Round(usdt / price, 1);
+                        quantity = Math.Round(USDT_BET / PRICE_SYMBOL, 1);
 
-                            order_id = Algorithm.AlgorithmOne.OpenOrder(socket, symbol, quantity, list_candle_ohlc[list_candle_ohlc.Count - 1].Close, sma_long.ys);
+                        order_id = Algorithm.AlgorithmOne.OpenOrder(socket, symbol, quantity, list_candle_ohlc[list_candle_ohlc.Count - 1].Close, sma_long.ys);
 
-                            start = false;
-                        }
+                        start = false;
                     }
 
                 }
@@ -770,7 +758,7 @@ namespace BinanceAlgorithmScottPlot
             {
                 Dispatcher.Invoke(new Action(() =>
                 {
-                    PRICE_SYMBOL.Text = Message.Data.MarkPrice.ToString();
+                    PRICE_SYMBOL = Message.Data.MarkPrice;
                 }));
             });
         }

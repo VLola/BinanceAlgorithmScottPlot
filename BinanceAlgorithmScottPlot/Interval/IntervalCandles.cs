@@ -3,12 +3,11 @@ using System.Collections.Generic;
 
 namespace BinanceAlgorithmScottPlot.Interval
 {
-    public class IntervalCandles
+    public static class IntervalCandles
     {
-        public List<Interval> Intervals;
-        public IntervalCandles()
+        public static List<Interval> Intervals()
         {
-            Intervals = new List<Interval>();
+            List<Interval> Intervals = new List<Interval>();
             Intervals.Add(new Interval() { name = "One Minute", interval = KlineInterval.OneMinute, timespan = 600000000 });
             Intervals.Add(new Interval() { name = "Three Minutes", interval = KlineInterval.ThreeMinutes, timespan = 1800000000 });
             Intervals.Add(new Interval() { name = "Five Minutes", interval = KlineInterval.FiveMinutes, timespan = 3000000000 });
@@ -24,6 +23,7 @@ namespace BinanceAlgorithmScottPlot.Interval
             Intervals.Add(new Interval() { name = "Three Day", interval = KlineInterval.ThreeDay, timespan = 2592000000000 });
             Intervals.Add(new Interval() { name = "One Week", interval = KlineInterval.OneWeek, timespan = 6048000000000 });
             Intervals.Add(new Interval() { name = "One Month", interval = KlineInterval.OneMonth, timespan = 25920000000000 });
+            return Intervals;
         }
     }
 }
