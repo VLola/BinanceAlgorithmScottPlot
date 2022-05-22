@@ -151,18 +151,12 @@
     <Compile Include="Algorithm\Algorithm.cs" />
     <Compile Include="Algorithm\AlgorithmBet.cs" />
     <Compile Include="Algorithm\AlgorithmOne.cs" />
+    <Compile Include="ConnectDB\ConnectCandle.cs" />
     <Compile Include="ConnectDB\ConnectHistoryOrder.cs" />
-    <Compile Include="ConnectDB\ConnectOHLC_NEW.cs" />
     <Compile Include="ConnectDB\ConnectOrder.cs" />
-    <Compile Include="Control\Menu.xaml.cs">
-      <DependentUpon>Menu.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="Model\ModelCandle.cs" />
     <Compile Include="Model\ModelHistoryOrder.cs" />
-    <Compile Include="Objects\OHLC_NEW.cs" />
-    <Page Include="Control\Menu.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
+    <Compile Include="Objects\Candle.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

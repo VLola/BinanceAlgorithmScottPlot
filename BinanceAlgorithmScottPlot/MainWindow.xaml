@@ -43,6 +43,7 @@
             <Setter Property="HorizontalAlignment" Value="Left" />
         </Style>
         <Style x:Key="styleLabel" TargetType="Label">
+            <Setter Property="Margin" Value="5 0" />
             <Setter Property="Foreground" Value="White" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="HorizontalAlignment" Value="Center" />
@@ -54,10 +55,19 @@
             <Setter Property="AcceptsReturn" Value="True" />
             <Setter Property="VerticalScrollBarVisibility" Value="Visible" />
         </Style>
-        <Style x:Key="styleTextBox" TargetType="TextBox">
+        <Style x:Key="styleTextBoxLogin" TargetType="TextBox">
             <Setter Property="Margin" Value="5 0" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="Foreground" Value="Gray" />
+            <Setter Property="Background" Value="Black" />
+        </Style>
+        <Style x:Key="styleTextBox" TargetType="TextBox">
+            <Setter Property="DockPanel.Dock" Value="Right" />
+            <Setter Property="Margin" Value="5 0" />
+            <Setter Property="Width" Value="50" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
             <Setter Property="Foreground" Value="Gray" />
             <Setter Property="Background" Value="Black" />
         </Style>
@@ -112,19 +122,19 @@
                                     <Label Content="ApiKey:" Style="{DynamicResource styleLabel}"/>
                                 </Grid>
                                 <Grid Grid.Column="1" Grid.Row="0" Style="{DynamicResource styleGridBlack}">
-                                    <TextBox x:Name="API_KEY" Style="{DynamicResource styleTextBox}"/>
+                                    <TextBox Text="{Binding Path=API_KEY, UpdateSourceTrigger=PropertyChanged}" Style="{DynamicResource styleTextBoxLogin}"/>
                                 </Grid>
                                 <Grid Grid.Column="2" Grid.Row="0" Style="{DynamicResource styleGridBlack}">
                                     <Label Content="SecretKey:" Style="{DynamicResource styleLabel}"/>
                                 </Grid>
                                 <Grid Grid.Column="3" Grid.Row="0" Style="{DynamicResource styleGridBlack}">
-                                    <TextBox x:Name="SECRET_KEY" Style="{DynamicResource styleTextBox}"/>
+                                    <TextBox Text="{Binding Path=SECRET_KEY, UpdateSourceTrigger=PropertyChanged}" Style="{DynamicResource styleTextBoxLogin}"/>
                                 </Grid>
                                 <Grid Grid.Column="0" Grid.Row="1" Style="{DynamicResource styleGridBlack}">
                                     <Label Content="Name:" Style="{DynamicResource styleLabel}"/>
                                 </Grid>
                                 <Grid Grid.Column="1" Grid.Row="1" Style="{DynamicResource styleGridBlack}">
-                                    <TextBox x:Name="CLIENT_NAME" Style="{DynamicResource styleTextBox}"/>
+                                    <TextBox Text="{Binding Path=CLIENT_NAME, UpdateSourceTrigger=PropertyChanged}" Style="{DynamicResource styleTextBoxLogin}"/>
                                 </Grid>
                                 <Grid Grid.Column="2" Grid.Row="1" Grid.ColumnSpan="2" Style="{DynamicResource styleGridBlack}">
                                     <ComboBox x:Name="BOX_NAME" Style="{DynamicResource styleComboBox}"/>
@@ -156,8 +166,8 @@
                                     <ComboBox x:Name="INTERVAL_TIME" ItemsSource="{Binding Path=Intervals}" DropDownClosed="INTERVAL_TIME_DropDownClosed" Style="{DynamicResource styleComboBox}"/>
                                 </DockPanel>
                                 <DockPanel Grid.Column="2" Grid.Row="0" Style="{DynamicResource styleDockPanel}">
-                                    <Label Content="PRICE:" Style="{DynamicResource styleLabel}"/>
-                                    <TextBlock Text="AddedUserControl" Style="{DynamicResource styleTextBlock}"/>
+                                    <Label Content="Line:" Style="{DynamicResource styleLabel}"/>
+                                    <TextBox Text="{Binding Path=LINE, UpdateSourceTrigger=PropertyChanged}" TextChanged="LINE_TextChanged" Style="{DynamicResource styleTextBox}"/>
                                 </DockPanel>
                                 <DockPanel Grid.Column="3" Grid.Row="0" Style="{DynamicResource styleDockPanel}">
                                     <Button Content="Long Bet" Click="LongBet_Click" Style="{DynamicResource styleButton}"/>
@@ -169,7 +179,7 @@
                                     <CheckBox Content="Online" Click="ONLINE_CHART_Click" Style="{DynamicResource styleCheckBox}"/>
                                 </DockPanel>
                                 <DockPanel Grid.Column="1" Grid.Row="1" Style="{DynamicResource styleDockPanel}">
-                                    <Label Content="Count candles:" Style="{DynamicResource styleLabel}"/>
+                                    <Label Content="Candles:" Style="{DynamicResource styleLabel}"/>
                                     <TextBox Text="{Binding Path=COUNT_CANDLES, UpdateSourceTrigger=PropertyChanged}" TextChanged="COUNT_CANDLES_TextChanged" Style="{DynamicResource styleTextBox}"/>
                                 </DockPanel>
                                 <DockPanel Grid.Column="2" Grid.Row="1" Style="{DynamicResource styleDockPanel}">
@@ -205,9 +215,10 @@
                                 </DockPanel>
 
                                 <DockPanel Grid.Column="4" Grid.Row="2" Style="{DynamicResource styleDockPanel}">
-                                    
+                                    <Label Content="PRICE:" Style="{DynamicResource styleLabel}"/>
+                                    <TextBlock Text="AddedUserControl" Style="{DynamicResource styleTextBlock}"/>
                                 </DockPanel>
-                                
+
 
                             </Grid>
                         </Grid>
@@ -221,7 +232,7 @@
                     </Grid>
                 </Grid>
             </TabItem>
-            <TabItem Header="Trade History" x:Name="TabHistory">
+            <TabItem Header="Trade History" x:Name="TabHistory" MouseLeftButtonUp="TAB_CONTROL_MouseLeftButtonUp">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="1*"/>

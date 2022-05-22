@@ -24,6 +24,10 @@ namespace BinanceAlgorithmScottPlot
 {
     public partial class MainWindow : Window
     {
+        public int LINE { get; set; } = 2;
+        public string API_KEY { get; set; } = "";
+        public string SECRET_KEY { get; set; } = "";
+        public string CLIENT_NAME { get; set; } = "";
         public int COUNT_CANDLES { get; set; } = 100;
         public int SMA_LONG { get; set; } = 20;
         public decimal USDT_BET { get; set; } = 10;
@@ -36,8 +40,9 @@ namespace BinanceAlgorithmScottPlot
         public List<string> list_sumbols_name = new List<string>();
         public FinancePlot candlePlot;
         public ScatterPlot sma_long_plot;
-        public ScatterPlot bolinger2;
-        public ScatterPlot bolinger3;
+        public ScatterPlot bolinger_lower;
+        public ScatterPlot bolinger_upper;
+        public ScatterPlot line_scatter;
         public ScatterPlot order_long_open_plot;
         public ScatterPlot order_long_close_plot;
         public ScatterPlot order_short_open_plot;
@@ -62,7 +67,6 @@ namespace BinanceAlgorithmScottPlot
             LIST_SYMBOLS.ItemsSource = list_sumbols_name;
             EXIT_GRID.Visibility = Visibility.Hidden;
             LOGIN_GRID.Visibility = Visibility.Visible;
-            TAB_CONTROL.MouseLeftButtonUp += TAB_CONTROL_MouseLeftButtonUp;
             this.DataContext = this;
 
             //Create Table BinanceFuturesOrders
@@ -75,8 +79,48 @@ namespace BinanceAlgorithmScottPlot
             {
                 context.HistoryOrders.Create();
             }
+            //Create Table Candles
+            using (ModelCandle context = new ModelCandle())
+            {
+                context.Candles.Create();
+            }
         }
 
+        #region - Chart Lines  -
+        private void LINE_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            NewLine();
+            plt.Refresh();
+        }
+        double[] line_x = new double[2];
+        double[] line_y = new double[2];
+        private void NewLine()
+        {
+            Array.Clear(line_x, 0, 2);
+            Array.Clear(line_y, 0, 2);
+            if (list_candle_ohlc.Count > 0)
+            {
+                if (LINE != 0)
+                {
+                    plt.Plot.Remove(line_scatter);
+                    double line = list_candle_ohlc[list_candle_ohlc.Count - 1].Close;
+                    double price = line + (line / 1000 * LINE);
+                    line_x[0] = list_candle_ohlc[list_candle_ohlc.Count - 1].DateTime.AddMinutes(-COUNT_CANDLES).ToOADate();
+                    line_x[1] = list_candle_ohlc[list_candle_ohlc.Count - 1].DateTime.ToOADate();
+                    line_y[0] = price;
+                    line_y[1] = line_y[0];
+                    line_scatter = plt.Plot.AddScatterLines(line_x, line_y, Color.LightGreen, lineStyle: LineStyle.Dash);
+                    line_scatter.YAxisIndex = 1;
+                }
+            }
+        }
+        private void LoadLine()
+        {
+            line_x[1] = list_candle_ohlc[list_candle_ohlc.Count - 1].DateTime.ToOADate();
+        }
+        #endregion
+
+        #region - Event CheckBox -
         private void ONLINE_CHART_Click(object sender, RoutedEventArgs e)
         {
             CheckBox box = e.Source as CheckBox;
@@ -87,6 +131,9 @@ namespace BinanceAlgorithmScottPlot
             CheckBox box = e.Source as CheckBox;
             START_BET = (bool)box.IsChecked;
         }
+        #endregion
+
+        #region - Open order, close order -
 
         public decimal quantity_bet;
         public long bet_order_id = 0;
@@ -119,6 +166,7 @@ namespace BinanceAlgorithmScottPlot
             string symbol = LIST_SYMBOLS.Text;
             if (bet_order_id != 0) bet_order_id = Algorithm.Algorithm.CloseOrder(socket, symbol, bet_order_id, quantity_bet);
         }
+        #endregion
 
         #region - Trede History -
         private void TAB_CONTROL_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -126,7 +174,8 @@ namespace BinanceAlgorithmScottPlot
             History();
             double sum_total = 0;
             int count_orders = 0;
-            foreach (var it in ConnectHistoryOrder.Get()) { 
+            foreach (var it in ConnectHistoryOrder.Get())
+            {
                 history_order.Insert(0, it);
                 sum_total += it.total;
                 count_orders++;
@@ -144,11 +193,11 @@ namespace BinanceAlgorithmScottPlot
             ConnectHistoryOrder.DeleteAll();
             List<BinanceFuturesOrder> orders = ConnectOrder.Get();
             int i = 0;
-            foreach(var it in ConnectOrder.Get())
+            foreach (var it in ConnectOrder.Get())
             {
-                if(it.PositionSide == PositionSide.Long && it.Side == OrderSide.Sell)
+                if (it.PositionSide == PositionSide.Long && it.Side == OrderSide.Sell)
                 {
-                    ConnectHistoryOrder.Insert(new HistoryOrder(it.CreateTime, it.Symbol, Convert.ToDouble(orders[i-1].AvgPrice), Convert.ToDouble(it.AvgPrice), Convert.ToDouble(orders[i-1].QuoteQuantityFilled), Convert.ToDouble(it.QuoteQuantityFilled), it.PositionSide));
+                    ConnectHistoryOrder.Insert(new HistoryOrder(it.CreateTime, it.Symbol, Convert.ToDouble(orders[i - 1].AvgPrice), Convert.ToDouble(it.AvgPrice), Convert.ToDouble(orders[i - 1].QuoteQuantityFilled), Convert.ToDouble(it.QuoteQuantityFilled), it.PositionSide));
                 }
                 else if (it.PositionSide == PositionSide.Short && it.Side == OrderSide.Buy)
                 {
@@ -242,7 +291,6 @@ namespace BinanceAlgorithmScottPlot
 
         #region - Load Chart -
 
-
         public List<OHLC> list_candle_ohlc = new List<OHLC>();
         private void LIST_SYMBOLS_DropDownClosed(object sender, EventArgs e)
         {
@@ -256,14 +304,13 @@ namespace BinanceAlgorithmScottPlot
                 if (symbol != "")
                 {
                     list_candle_ohlc.Clear();
-                    List<OHLC_NEW> olhc_new = new List<OHLC_NEW>();
-                    olhc_new = ConnectOHLC_NEW.Get();
-                    foreach (OHLC_NEW it in olhc_new)
+                    List<Candle> list_candles = new List<Candle>();
+                    list_candles = ConnectCandle.Get();
+                    foreach (Candle it in list_candles)
                     {
-                        list_candle_ohlc.Add(new OHLC(Decimal.ToDouble(it.Open), Decimal.ToDouble(it.High), Decimal.ToDouble(it.Low), Decimal.ToDouble(it.Close), it.DateTime, timeSpan));
+                        list_candle_ohlc.Add(new OHLC(it.Open, it.High, it.Low, it.Close, it.DateTime, it.TimeSpan));
                     }
                     InfoOrderAsunc(list_candle_ohlc[0].DateTime);
-                    LoadingChart();
                 }
             }
             catch (Exception c)
@@ -277,10 +324,14 @@ namespace BinanceAlgorithmScottPlot
             if (socket != null && SMA_LONG > 1 && COUNT_CANDLES > 0 && COUNT_CANDLES > SMA_LONG && COUNT_CANDLES < 500)
             {
                 StopAsync();
-                ConnectOHLC_NEW.DeleteAll();
+                ConnectCandle.DeleteAll();
                 LoadingCandlesToDB();
                 if (ONLINE_CHART) StartKlineAsync();
                 LoadingCandlesToChart();
+                NewLine();
+                LoadingChart();
+                plt.Plot.AxisAuto();
+                plt.Refresh();
             }
         }
         private void ReloadSmaChart()
@@ -288,15 +339,15 @@ namespace BinanceAlgorithmScottPlot
             if (socket != null && SMA_LONG > 1 && COUNT_CANDLES > 0 && COUNT_CANDLES > SMA_LONG && COUNT_CANDLES < 500 && SMA_LONG < list_candle_ohlc.Count - 1)
             {
                 plt.Plot.Remove(sma_long_plot);
-                plt.Plot.Remove(bolinger2);
-                plt.Plot.Remove(bolinger3);
+                plt.Plot.Remove(bolinger_lower);
+                plt.Plot.Remove(bolinger_upper);
                 sma_long = candlePlot.GetBollingerBands(SMA_LONG);
                 sma_long_plot = plt.Plot.AddScatterLines(sma_long.xs, sma_long.ys, Color.Cyan, 2, label: SMA_LONG + " minute SMA");
                 sma_long_plot.YAxisIndex = 1;
-                bolinger2 = plt.Plot.AddScatterLines(sma_long.xs, sma_long.lower, Color.Blue, lineStyle: LineStyle.Dash);
-                bolinger2.YAxisIndex = 1;
-                bolinger3 = plt.Plot.AddScatterLines(sma_long.xs, sma_long.upper, Color.Blue, lineStyle: LineStyle.Dash);
-                bolinger3.YAxisIndex = 1;
+                bolinger_lower = plt.Plot.AddScatterLines(sma_long.xs, sma_long.lower, Color.Blue, lineStyle: LineStyle.Dash);
+                bolinger_lower.YAxisIndex = 1;
+                bolinger_upper = plt.Plot.AddScatterLines(sma_long.xs, sma_long.upper, Color.Blue, lineStyle: LineStyle.Dash);
+                bolinger_upper.YAxisIndex = 1;
                 plt.Refresh();
             }
         }
@@ -307,27 +358,37 @@ namespace BinanceAlgorithmScottPlot
             {
                 if (SMA_LONG > 1 && SMA_LONG < list_candle_ohlc.Count - 1)
                 {
+
                     plt.Plot.Remove(candlePlot);
                     plt.Plot.Remove(sma_long_plot);
+                    plt.Plot.Remove(bolinger_lower);
+                    plt.Plot.Remove(bolinger_upper);
                     plt.Plot.Remove(order_long_open_plot);
                     plt.Plot.Remove(order_long_close_plot);
                     plt.Plot.Remove(order_short_open_plot);
                     plt.Plot.Remove(order_short_close_plot);
+                    // Candles
+                    candlePlot = plt.Plot.AddCandlesticks(list_candle_ohlc.ToArray());
+                    candlePlot.YAxisIndex = 1;
+                    // Line
+                    LoadLine();
+                    // Sma
+                    sma_long = candlePlot.GetBollingerBands(SMA_LONG);
+                    sma_long_plot = plt.Plot.AddScatterLines(sma_long.xs, sma_long.ys, Color.Cyan, 2, label: SMA_LONG + " minute SMA");
+                    sma_long_plot.YAxisIndex = 1;
+                    // Bolinger lower
+                    bolinger_lower = plt.Plot.AddScatterLines(sma_long.xs, sma_long.lower, Color.Blue, lineStyle: LineStyle.Dash);
+                    bolinger_lower.YAxisIndex = 1;
+                    // Bolinger upper
+                    bolinger_upper = plt.Plot.AddScatterLines(sma_long.xs, sma_long.upper, Color.Blue, lineStyle: LineStyle.Dash);
+                    bolinger_upper.YAxisIndex = 1;
+                    // Orders
                     if (order_long_lines_vertical.Count > 0) foreach (var it in order_long_lines_vertical) plt.Plot.Remove(it);
                     if (order_long_lines_horisontal.Count > 0) foreach (var it in order_long_lines_horisontal) plt.Plot.Remove(it);
                     if (order_short_lines_vertical.Count > 0) foreach (var it in order_short_lines_vertical) plt.Plot.Remove(it);
                     if (order_short_lines_horisontal.Count > 0) foreach (var it in order_short_lines_horisontal) plt.Plot.Remove(it);
-                    plt.Plot.Remove(bolinger2);
-                    plt.Plot.Remove(bolinger3);
-                    candlePlot = plt.Plot.AddCandlesticks(list_candle_ohlc.ToArray());
-                    candlePlot.YAxisIndex = 1;
-                    sma_long = candlePlot.GetBollingerBands(SMA_LONG);
-                    sma_long_plot = plt.Plot.AddScatterLines(sma_long.xs, sma_long.ys, Color.Cyan, 2, label: SMA_LONG + " minute SMA");
-                    sma_long_plot.YAxisIndex = 1;
-                    bolinger2 = plt.Plot.AddScatterLines(sma_long.xs, sma_long.lower, Color.Blue, lineStyle: LineStyle.Dash);
-                    bolinger2.YAxisIndex = 1;
-                    bolinger3 = plt.Plot.AddScatterLines(sma_long.xs, sma_long.upper, Color.Blue, lineStyle: LineStyle.Dash);
-                    bolinger3.YAxisIndex = 1;
+
+
                     if (long_close_order_x.Count != 0 && long_close_order_y.Count != 0)
                     {
                         order_long_close_plot = plt.Plot.AddScatter(long_close_order_x.ToArray(), long_close_order_y.ToArray(), color: Color.Orange, lineWidth: 0, markerSize: 10, markerShape: MarkerShape.eks);
@@ -385,11 +446,8 @@ namespace BinanceAlgorithmScottPlot
                         order_short_open_plot.YAxisIndex = 1;
                     }
 
-
-
                     //StartAlgorithm();
-                    plt.Refresh();
-                    
+
                 }
             }
         }
@@ -566,7 +624,7 @@ namespace BinanceAlgorithmScottPlot
                     {
                         quantity = Math.Round(USDT_BET / PRICE_SYMBOL, 1);
 
-                        order_id = Algorithm.AlgorithmOne.OpenOrder(socket, symbol, quantity, list_candle_ohlc[list_candle_ohlc.Count - 1].Close, sma_long.ys);
+                        order_id = Algorithm.AlgorithmBet.OpenOrder(socket, symbol, quantity, list_candle_ohlc[list_candle_ohlc.Count - 1].Close, sma_long.ys[sma_long.ys.Length - 1]);
 
                         start = false;
                     }
@@ -740,8 +798,7 @@ namespace BinanceAlgorithmScottPlot
                 ErrorText.Add($"STOP_ASYNC_Click {c.Message}");
             }
         }
-        public OHLC_NEW ohlc_item = new OHLC_NEW();
-        public int Id;
+        public Candle candle = new Candle();
         public void StartKlineAsync()
         {
             StartPriceAsync();
@@ -749,14 +806,16 @@ namespace BinanceAlgorithmScottPlot
             {
                 Dispatcher.Invoke(new Action(() =>
                 {
-                    if (ohlc_item.DateTime == Message.Data.Data.OpenTime) ConnectOHLC_NEW.Delete(Id);
-                    ohlc_item.DateTime = Message.Data.Data.OpenTime;
-                    ohlc_item.Open = Message.Data.Data.OpenPrice;
-                    ohlc_item.High = Message.Data.Data.HighPrice;
-                    ohlc_item.Low = Message.Data.Data.LowPrice;
-                    ohlc_item.Close = Message.Data.Data.ClosePrice;
-                    Id = Convert.ToInt32(ConnectOHLC_NEW.Insert(ohlc_item));
+                    candle.DateTime = Message.Data.Data.OpenTime;
+                    candle.Open = Decimal.ToDouble(Message.Data.Data.OpenPrice);
+                    candle.High = Decimal.ToDouble(Message.Data.Data.HighPrice);
+                    candle.Low = Decimal.ToDouble(Message.Data.Data.LowPrice);
+                    candle.Close = Decimal.ToDouble(Message.Data.Data.ClosePrice);
+                    candle.TimeSpan = timeSpan;
+                    if (!ConnectCandle.Update(candle)) ConnectCandle.Insert(candle);
                     LoadingCandlesToChart();
+                    LoadingChart();
+                    plt.Refresh();
                 }));
             });
 
@@ -785,12 +844,13 @@ namespace BinanceAlgorithmScottPlot
                 {
                     foreach (var it in result.Data.ToList())
                     {
-                        ohlc_item.DateTime = it.OpenTime;
-                        ohlc_item.Open = it.OpenPrice;
-                        ohlc_item.High = it.HighPrice;
-                        ohlc_item.Low = it.LowPrice;
-                        ohlc_item.Close = it.ClosePrice;
-                        Id = Convert.ToInt32(ConnectOHLC_NEW.Insert(ohlc_item));
+                        candle.DateTime = it.OpenTime;
+                        candle.Open = Decimal.ToDouble(it.OpenPrice);
+                        candle.High = Decimal.ToDouble(it.HighPrice);
+                        candle.Low = Decimal.ToDouble(it.LowPrice);
+                        candle.Close = Decimal.ToDouble(it.ClosePrice);
+                        candle.TimeSpan = timeSpan;
+                        ConnectCandle.Insert(candle);
                     }
                 }
             }
@@ -807,22 +867,20 @@ namespace BinanceAlgorithmScottPlot
         {
             try
             {
-                string name = CLIENT_NAME.Text;
-                string api = API_KEY.Text;
-                string key = SECRET_KEY.Text;
-                if (name != "" && api != "" && key != "")
+                if (CLIENT_NAME != "" && API_KEY != "" && SECRET_KEY != "")
                 {
                     string path = System.IO.Path.Combine(Environment.CurrentDirectory, "clients");
                     if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-                    if (!File.Exists(path + "/" + CLIENT_NAME.Text))
+                    if (!File.Exists(path + "/" + CLIENT_NAME))
                     {
-                        CLIENT_NAME.Text = "";
-                        API_KEY.Text = "";
-                        SECRET_KEY.Text = "";
-                        Client client = new Client(name, api, key);
+
+                        Client client = new Client(CLIENT_NAME, API_KEY, SECRET_KEY);
                         string json = JsonConvert.SerializeObject(client);
-                        File.WriteAllText(path + "/" + name, json);
+                        File.WriteAllText(path + "/" + CLIENT_NAME, json);
                         Clients();
+                        CLIENT_NAME = "";
+                        API_KEY = "";
+                        SECRET_KEY = "";
                     }
                 }
             }
@@ -854,15 +912,14 @@ namespace BinanceAlgorithmScottPlot
         {
             try
             {
-                string api = API_KEY.Text;
-                string key = SECRET_KEY.Text;
-                if (api != "" && key != "")
+                if (API_KEY != "" && SECRET_KEY != "")
                 {
-                    CLIENT_NAME.Text = "";
-                    API_KEY.Text = "";
-                    SECRET_KEY.Text = "";
-                    socket = new Socket(api, key);
+
+                    socket = new Socket(API_KEY, SECRET_KEY);
                     Login_Click();
+                    CLIENT_NAME = "";
+                    API_KEY = "";
+                    SECRET_KEY = "";
                 }
                 else if (BOX_NAME.Text != "")
                 {
