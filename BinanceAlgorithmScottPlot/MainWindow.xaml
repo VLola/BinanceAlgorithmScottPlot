@@ -63,11 +63,9 @@
             <Setter Property="Background" Value="Black" />
         </Style>
         <Style x:Key="styleTextBox" TargetType="TextBox">
-            <Setter Property="DockPanel.Dock" Value="Right" />
             <Setter Property="Margin" Value="5 0" />
-            <Setter Property="Width" Value="50" />
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="Foreground" Value="Gray" />
             <Setter Property="Background" Value="Black" />
         </Style>
@@ -159,67 +157,95 @@
                                     <RowDefinition/>
                                     <RowDefinition/>
                                 </Grid.RowDefinitions>
-                                <DockPanel Grid.Column="0" Grid.Row="0" Style="{DynamicResource styleDockPanel}">
+                                <Grid Grid.Column="0" Grid.Row="0" Style="{DynamicResource styleGridBlack}">
                                     <ComboBox x:Name="LIST_SYMBOLS" DropDownClosed="LIST_SYMBOLS_DropDownClosed" Style="{DynamicResource styleComboBox}"/>
-                                </DockPanel>
-                                <DockPanel Grid.Column="1" Grid.Row="0" Style="{DynamicResource styleDockPanel}">
+                                </Grid>
+                                <Grid Grid.Column="1" Grid.Row="0" Style="{DynamicResource styleGridBlack}">
                                     <ComboBox x:Name="INTERVAL_TIME" ItemsSource="{Binding Path=Intervals}" DropDownClosed="INTERVAL_TIME_DropDownClosed" Style="{DynamicResource styleComboBox}"/>
-                                </DockPanel>
-                                <DockPanel Grid.Column="2" Grid.Row="0" Style="{DynamicResource styleDockPanel}">
-                                    <Label Content="Line:" Style="{DynamicResource styleLabel}"/>
-                                    <TextBox Text="{Binding Path=LINE, UpdateSourceTrigger=PropertyChanged}" TextChanged="LINE_TextChanged" Style="{DynamicResource styleTextBox}"/>
-                                </DockPanel>
-                                <DockPanel Grid.Column="3" Grid.Row="0" Style="{DynamicResource styleDockPanel}">
+                                </Grid>
+                                <Grid Grid.Column="2" Grid.Row="0" Style="{DynamicResource styleGridBlack}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Column="0" Content="Line:" Style="{DynamicResource styleLabel}"/>
+                                    <TextBox Grid.Column="1" Text="{Binding Path=LINE, UpdateSourceTrigger=PropertyChanged}" TextChanged="LINE_TextChanged" Style="{DynamicResource styleTextBox}"/>
+                                </Grid>
+                                <Grid Grid.Column="3" Grid.Row="0" Style="{DynamicResource styleGridBlack}">
                                     <Button Content="Long Bet" Click="LongBet_Click" Style="{DynamicResource styleButton}"/>
-                                </DockPanel>
-                                <DockPanel Grid.Column="4" Grid.Row="0" Style="{DynamicResource styleDockPanel}">
+                                </Grid>
+                                <Grid Grid.Column="4" Grid.Row="0" Style="{DynamicResource styleGridBlack}">
                                     <Button Content="Exit" Click="Exit_Click" Style="{DynamicResource styleButton}"/>
-                                </DockPanel>
-                                <DockPanel Grid.Column="0" Grid.Row="1" Style="{DynamicResource styleDockPanel}">
+                                </Grid>
+                                <Grid Grid.Column="0" Grid.Row="1" Style="{DynamicResource styleGridBlack}">
                                     <CheckBox Content="Online" Click="ONLINE_CHART_Click" Style="{DynamicResource styleCheckBox}"/>
-                                </DockPanel>
-                                <DockPanel Grid.Column="1" Grid.Row="1" Style="{DynamicResource styleDockPanel}">
-                                    <Label Content="Candles:" Style="{DynamicResource styleLabel}"/>
-                                    <TextBox Text="{Binding Path=COUNT_CANDLES, UpdateSourceTrigger=PropertyChanged}" TextChanged="COUNT_CANDLES_TextChanged" Style="{DynamicResource styleTextBox}"/>
-                                </DockPanel>
-                                <DockPanel Grid.Column="2" Grid.Row="1" Style="{DynamicResource styleDockPanel}">
-                                    <Label Content="SMA long:" Style="{DynamicResource styleLabel}"/>
-                                    <TextBox Text="{Binding SMA_LONG, UpdateSourceTrigger=PropertyChanged}" TextChanged="SMA_LONG_TextChanged" Style="{DynamicResource styleTextBox}"/>
-                                </DockPanel>
-                                <DockPanel Grid.Column="3" Grid.Row="1" Style="{DynamicResource styleDockPanel}">
+                                </Grid>
+                                <Grid Grid.Column="1" Grid.Row="1" Style="{DynamicResource styleGridBlack}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Column="0" Content="Candles:" Style="{DynamicResource styleLabel}"/>
+                                    <TextBox Grid.Column="1" Text="{Binding Path=COUNT_CANDLES, UpdateSourceTrigger=PropertyChanged}" TextChanged="COUNT_CANDLES_TextChanged" Style="{DynamicResource styleTextBox}"/>
+                                </Grid>
+                                <Grid Grid.Column="2" Grid.Row="1" Style="{DynamicResource styleGridBlack}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Column="0" Content="SMA long:" Style="{DynamicResource styleLabel}"/>
+                                    <TextBox Grid.Column="1" Text="{Binding SMA_LONG, UpdateSourceTrigger=PropertyChanged}" TextChanged="SMA_LONG_TextChanged" Style="{DynamicResource styleTextBox}"/>
+                                </Grid>
+                                <Grid Grid.Column="3" Grid.Row="1" Style="{DynamicResource styleGridBlack}">
                                     <Button Content="Short Bet" Click="ShortBet_Click" Style="{DynamicResource styleButton}"/>
-                                </DockPanel>
-                                <DockPanel Grid.Column="4" Grid.Row="1" Style="{DynamicResource styleDockPanel}">
+                                </Grid>
+                                <Grid Grid.Column="4" Grid.Row="1" Style="{DynamicResource styleGridBlack}">
                                     <Button Content="Disconnect" Click="STOP_ASYNC_Click" Style="{DynamicResource styleButton}"/>
-                                </DockPanel>
-                                <DockPanel Grid.Column="0" Grid.Row="2" Style="{DynamicResource styleDockPanel}">
+                                </Grid>
+                                <Grid Grid.Column="0" Grid.Row="2" Style="{DynamicResource styleGridBlack}">
                                     <CheckBox Content="Start bet" Click="START_BET_Click" Style="{DynamicResource styleCheckBox}"/>
-                                </DockPanel>
-                                <DockPanel Grid.Column="1" Grid.Row="2" Style="{DynamicResource styleDockPanel}">
-                                    <Label Content="USDT:" Style="{DynamicResource styleLabel}"/>
-                                    <TextBox Text="{Binding Path=USDT_BET}" Style="{DynamicResource styleTextBox}"/>
-                                </DockPanel>
-                                <StackPanel Grid.Column="2" Grid.Row="2" Style="{DynamicResource styleStackPanel}">
-                                    <DockPanel>
-                                        <Label Content="TP:" Style="{DynamicResource styleLabel}"/>
-                                        <TextBox Text="{Binding Path=BOLINGER_TP}" Style="{DynamicResource styleTextBox}"/>
-                                    </DockPanel>
-                                    <DockPanel>
-                                        <Label Content="SL:" Style="{DynamicResource styleLabel}"/>
-                                        <TextBox Text="{Binding Path=BOLINGER_SL}" Style="{DynamicResource styleTextBox}"/>
-                                    </DockPanel>
-                                </StackPanel>
-
-                                <DockPanel Grid.Column="3" Grid.Row="2" Style="{DynamicResource styleDockPanel}">
+                                </Grid>
+                                <Grid Grid.Column="1" Grid.Row="2" Style="{DynamicResource styleGridBlack}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Column="0" Content="USDT:" Style="{DynamicResource styleLabel}"/>
+                                    <TextBox Grid.Column="1" Text="{Binding Path=USDT_BET}" Style="{DynamicResource styleTextBox}"/>
+                                </Grid>
+                                <Grid Grid.Column="2" Grid.Row="2" Style="{DynamicResource styleGridBlack}">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Grid Grid.Row="0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <Label Grid.Column="0" Content="TP:" Style="{DynamicResource styleLabel}"/>
+                                        <TextBox Grid.Column="1" Text="{Binding Path=BOLINGER_TP}" Style="{DynamicResource styleTextBox}"/>
+                                    </Grid>
+                                    <Grid Grid.Row="1">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <Label Grid.Column="0" Content="SL:" Style="{DynamicResource styleLabel}"/>
+                                        <TextBox Grid.Column="1" Text="{Binding Path=BOLINGER_SL}" Style="{DynamicResource styleTextBox}"/>
+                                    </Grid>
+                                </Grid>
+                                <Grid Grid.Column="3" Grid.Row="2" Style="{DynamicResource styleGridBlack}">
                                     <Button Content="Close Order" Click="CloseOrder_Click" Style="{DynamicResource styleButton}"/>
-                                </DockPanel>
-
-                                <DockPanel Grid.Column="4" Grid.Row="2" Style="{DynamicResource styleDockPanel}">
-                                    <Label Content="PRICE:" Style="{DynamicResource styleLabel}"/>
-                                    <TextBlock Text="AddedUserControl" Style="{DynamicResource styleTextBlock}"/>
-                                </DockPanel>
-
-
+                                </Grid>
+                                <Grid Grid.Column="4" Grid.Row="2" Style="{DynamicResource styleGridBlack}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Column="0" Content="PRICE:" Style="{DynamicResource styleLabel}"/>
+                                    <TextBlock Grid.Column="1" Text="Add" Style="{DynamicResource styleTextBlock}"/>
+                                </Grid>
                             </Grid>
                         </Grid>
                     </Grid>
