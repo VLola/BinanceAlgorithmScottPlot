@@ -156,6 +156,7 @@
     <Compile Include="ConnectDB\ConnectOrder.cs" />
     <Compile Include="Model\ModelCandle.cs" />
     <Compile Include="Model\ModelHistoryOrder.cs" />
+    <Compile Include="Model\Variables.cs" />
     <Compile Include="Objects\Candle.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
