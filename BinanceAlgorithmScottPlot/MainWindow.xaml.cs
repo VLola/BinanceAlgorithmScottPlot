@@ -32,8 +32,6 @@ namespace BinanceAlgorithmScottPlot
         public int COUNT_CANDLES { get; set; } = 100;
         public int SMA_LONG { get; set; } = 20;
         public decimal USDT_BET { get; set; } = 10;
-        bool ONLINE_CHART { get; set; } = false;
-        bool START_BET { get; set; } = false;
         public double BOLINGER_TP { get; set; } = 100;
         public double BOLINGER_SL { get; set; } = 100;
         public Socket socket;
@@ -58,15 +56,19 @@ namespace BinanceAlgorithmScottPlot
         public MainWindow()
         {
             InitializeComponent();
-            ErrorWatcher();
             Chart();
+            Loaded += MainWindow_Loaded;
+        }
+
+        #region - Loaded -
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            ErrorWatcher();
             Clients();
             HISTORY_ORDER.ItemsSource = history_order;
             INTERVAL_TIME.ItemsSource = IntervalCandles.Intervals();
             INTERVAL_TIME.SelectedIndex = 0;
             LIST_SYMBOLS.ItemsSource = list_sumbols_name;
-            EXIT_GRID.Visibility = Visibility.Hidden;
-            LOGIN_GRID.Visibility = Visibility.Visible;
             this.DataContext = this;
 
             //Create Table BinanceFuturesOrders
@@ -84,18 +86,6 @@ namespace BinanceAlgorithmScottPlot
             {
                 context.Candles.Create();
             }
-        }
-
-        #region - Event CheckBox -
-        private void ONLINE_CHART_Click(object sender, RoutedEventArgs e)
-        {
-            CheckBox box = e.Source as CheckBox;
-            ONLINE_CHART = (bool)box.IsChecked;
-        }
-        private void START_BET_Click(object sender, RoutedEventArgs e)
-        {
-            CheckBox box = e.Source as CheckBox;
-            START_BET = (bool)box.IsChecked;
         }
         #endregion
 
@@ -306,7 +296,7 @@ namespace BinanceAlgorithmScottPlot
                 StopAsync();
                 ConnectCandle.DeleteAll();
                 LoadingCandlesToDB();
-                if (ONLINE_CHART) StartKlineAsync();
+                if (variables.ONLINE_CHART) StartKlineAsync();
                 LoadingCandlesToChart();
                 LoadingChart();
                 plt.Plot.AxisAuto();
@@ -556,7 +546,7 @@ namespace BinanceAlgorithmScottPlot
         {
             try
             {
-                if (START_BET && ONLINE_CHART && order_id == 0)
+                if (variables.START_BET && variables.ONLINE_CHART && order_id == 0)
                 {
                     Position();
 
@@ -574,7 +564,7 @@ namespace BinanceAlgorithmScottPlot
                 string symbol = LIST_SYMBOLS.Text;
 
 
-                if (START_BET && ONLINE_CHART && order_id != 0)
+                if (variables.START_BET && variables.ONLINE_CHART && order_id != 0)
                 {
                     bool sl = false;
                     bool tp = false;
@@ -595,7 +585,7 @@ namespace BinanceAlgorithmScottPlot
                         if (order_id == 0) start_programm = true;
                     }
                 }
-                if (START_BET && ONLINE_CHART && start && order_id == 0)
+                if (variables.START_BET && variables.ONLINE_CHART && start && order_id == 0)
                 {
                     if (USDT_BET > 0m && variables.PRICE_SYMBOL > 0m)
                     {
@@ -761,6 +751,7 @@ namespace BinanceAlgorithmScottPlot
                         candle.TimeSpan = timeSpan;
                         ConnectCandle.Insert(candle);
                     }
+                    variables.PRICE_SYMBOL = result.Data.ToList()[result.Data.ToList().Count - 1].ClosePrice;
                 }
             }
             catch (Exception e)

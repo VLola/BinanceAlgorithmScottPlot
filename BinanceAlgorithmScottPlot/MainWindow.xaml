@@ -104,7 +104,7 @@
                     </Grid.RowDefinitions>
                     <Grid>
                         <Grid Grid.Column="0" Grid.Row="0">
-                            <Grid Visibility="Hidden" x:Name="LOGIN_GRID" Style="{DynamicResource styleGrid}">
+                            <Grid Visibility="Visible" x:Name="LOGIN_GRID" Style="{DynamicResource styleGrid}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition/>
                                     <ColumnDefinition/>
@@ -144,7 +144,7 @@
                                     <Button Content="Login" Click="Button_Login" Style="{DynamicResource styleButton}"/>
                                 </Grid>
                             </Grid>
-                            <Grid Visibility="Visible" x:Name="EXIT_GRID" Style="{DynamicResource styleGrid}">
+                            <Grid Visibility="Hidden" x:Name="EXIT_GRID" Style="{DynamicResource styleGrid}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition/>
                                     <ColumnDefinition/>
@@ -178,7 +178,7 @@
                                     <Button Content="Exit" Click="Exit_Click" Style="{DynamicResource styleButton}"/>
                                 </Grid>
                                 <Grid Grid.Column="0" Grid.Row="1" Style="{DynamicResource styleGridBlack}">
-                                    <CheckBox Content="Online" Click="ONLINE_CHART_Click" Style="{DynamicResource styleCheckBox}"/>
+                                    <CheckBox Content="Online" IsChecked="{Binding Path=variables.ONLINE_CHART}" Style="{DynamicResource styleCheckBox}"/>
                                 </Grid>
                                 <Grid Grid.Column="1" Grid.Row="1" Style="{DynamicResource styleGridBlack}">
                                     <Grid.ColumnDefinitions>
@@ -203,7 +203,7 @@
                                     <Button Content="Disconnect" Click="STOP_ASYNC_Click" Style="{DynamicResource styleButton}"/>
                                 </Grid>
                                 <Grid Grid.Column="0" Grid.Row="2" Style="{DynamicResource styleGridBlack}">
-                                    <CheckBox Content="Start bet" Click="START_BET_Click" Style="{DynamicResource styleCheckBox}"/>
+                                    <CheckBox Content="Start bet" IsChecked="{Binding Path=variables.START_BET}" Style="{DynamicResource styleCheckBox}"/>
                                 </Grid>
                                 <Grid Grid.Column="1" Grid.Row="2" Style="{DynamicResource styleGridBlack}">
                                     <Grid.ColumnDefinitions>
