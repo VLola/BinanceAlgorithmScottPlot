@@ -9,6 +9,7 @@ namespace BinanceAlgorithmScottPlot.Binance
         public string ClientName { get; set; }
         public string ApiKey { get; set; }
         public string SecretKey { get; set; }
+        public Client() { }
         public Client(string ClientName, string ApiKey, string SecretKey)
         {
             this.ClientName = ClientName;
