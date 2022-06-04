@@ -86,6 +86,11 @@ namespace BinanceAlgorithmScottPlot
             {
                 context.Candles.Create();
             }
+            //Create Table Clients
+            using (ModelClient context = new ModelClient())
+            {
+                context.Clients.Create();
+            }
         }
         #endregion
 
@@ -814,7 +819,6 @@ namespace BinanceAlgorithmScottPlot
             {
                 if (API_KEY != "" && SECRET_KEY != "")
                 {
-
                     socket = new Socket(API_KEY, SECRET_KEY);
                     Login_Click();
                     CLIENT_NAME = "";

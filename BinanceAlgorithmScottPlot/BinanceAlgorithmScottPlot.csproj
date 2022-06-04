@@ -152,9 +152,11 @@
     <Compile Include="Algorithm\AlgorithmBet.cs" />
     <Compile Include="Algorithm\AlgorithmOne.cs" />
     <Compile Include="ConnectDB\ConnectCandle.cs" />
+    <Compile Include="ConnectDB\ConnectClient.cs" />
     <Compile Include="ConnectDB\ConnectHistoryOrder.cs" />
     <Compile Include="ConnectDB\ConnectOrder.cs" />
     <Compile Include="Model\ModelCandle.cs" />
+    <Compile Include="Model\ModelClient.cs" />
     <Compile Include="Model\ModelHistoryOrder.cs" />
     <Compile Include="Model\Variables.cs" />
     <Compile Include="Objects\Candle.cs" />
